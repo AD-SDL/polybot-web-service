@@ -18,6 +18,9 @@ setup(
     description='Server to analyze, monitor and control robotic experiments performed at CNM',
     install_requires=requirements,
     python_requires=">=3.7",
+    package_data={
+        'polybot': ['templates/*.html']
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
