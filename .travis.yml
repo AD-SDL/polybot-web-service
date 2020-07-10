@@ -8,5 +8,6 @@ install:
   - pip install coveralls
 script:
   - pytest --cov=polybot
+  - flake8
 after_success:
   - coveralls

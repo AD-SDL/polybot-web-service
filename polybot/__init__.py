@@ -23,6 +23,7 @@ def create_app(test_config: dict = None) -> Flask:
 
     @app.route('/')
     def home():
-        return render_template('home.html', message=f'Running on {platform.node()} since {start_time}')
+        return render_template('home.html',
+                               message=f'Running on {platform.node()} since {start_time}')
 
     return app
