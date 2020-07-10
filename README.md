@@ -23,3 +23,13 @@ which you can use to build the environment using `pip`:
 Activate the environment, if you used Anaconda,
 and then call `./run.sh` to 
 launch a server that is accessible from localhost only.
+
+## Using Polybot
+
+Polybot comes with a command line interface, also named "`polybot`".
+
+At present, the only command is to upload data to the server:
+
+`polybot upload experiment_name file.csv`
+
+Call `polybot --help` to see the full list of operations.

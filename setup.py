@@ -21,6 +21,11 @@ setup(
     package_data={
         'polybot': ['templates/*.html']
     },
+    entry_points={
+        'console_scripts': [
+            'polybot = polybot.cli:main'
+        ]
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",

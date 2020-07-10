@@ -1,7 +1,10 @@
 from datetime import datetime
 import platform
+import os
 
 from flask import Flask, render_template
+
+from polybot.version import __version__
 
 
 def create_app(test_config: dict = None) -> Flask:
@@ -13,7 +16,8 @@ def create_app(test_config: dict = None) -> Flask:
     # Load in the configuration
     if test_config is None:
         # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
+        app.config.from_pyfile(os.path.join(os.path.dirname(__file__), 'config.py'), silent=True)
+        print(app.config)
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
