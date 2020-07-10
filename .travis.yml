@@ -5,7 +5,7 @@ python:
 install:
   - pip install .
   - pip install -r test-requirements.txt --upgrade
-  - pip install coveralls
+  - pip install coveralls flake8
 script:
   - pytest --cov=polybot
   - flake8
