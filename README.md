@@ -15,3 +15,8 @@ which you can use to build the environment using `pip`:
 
 `pip install -e .`
 
+## Running Polybot
+
+Activate the environment, if you used Anaconda,
+and then call `./run.sh` to 
+launch a server that is accessible from localhost only.
