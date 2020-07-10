@@ -1,0 +1,15 @@
+name: polybot
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python==3.7.*
+  - flask==1.1.*
+  - matplotlib>3
+  - pandas==1.*
+  - pytest
+  - pytest-flask
+  - flake8
+  - pip
+  - pip: 
+    - -e .
