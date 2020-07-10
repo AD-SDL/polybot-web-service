@@ -1,6 +1,6 @@
 # Polybot
 
-A robot to control the synthesis of thin-film via automated experiments.
+A server for controlling the robot synthesis of thin-film polymeric materials.
 
 ## Installation
 
