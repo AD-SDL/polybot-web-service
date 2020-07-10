@@ -8,6 +8,7 @@ dependencies:
   - matplotlib>3
   - pandas==1.*
   - pytest
+  - pytest-cov
   - pytest-flask
   - flake8
   - pip

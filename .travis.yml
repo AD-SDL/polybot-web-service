@@ -5,5 +5,8 @@ python:
 install:
   - pip install .
   - pip install -r test-requirements.txt
+  - pip install coveralls
 script:
-  - pytest
+  - pytest --cov=polybot
+after_success:
+  - coveralls
