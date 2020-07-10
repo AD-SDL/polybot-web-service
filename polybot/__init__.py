@@ -4,7 +4,7 @@ import os
 
 from flask import Flask, render_template
 
-from polybot.version import __version__
+from polybot.version import __version__  # noqa: F401
 
 
 def create_app(test_config: dict = None) -> Flask:

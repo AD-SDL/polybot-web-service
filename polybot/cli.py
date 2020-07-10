@@ -1,6 +1,5 @@
 """Command line interface for polybot"""
 
-import json
 import logging
 from argparse import ArgumentParser, Namespace
 
@@ -38,11 +37,13 @@ def create_parser() -> ArgumentParser:
     parser.add_argument('--verbose', action='store_true', help='Turn on logging')
     parser.add_argument('--host', help='URL of polybot service', type=str, default='localhost')
     parser.add_argument('--port', help='Port of polybot service', type=int, default=5000)
-    sub_parser = parser.add_subparsers(title='Subcommands', help='Available subcommands for polybot')
+    sub_parser = parser.add_subparsers(title='Subcommands',
+                                       help='Available subcommands for polybot')
 
     # Create the upload functionality
     upload_parser = sub_parser.add_parser('upload', help='Upload files to polybot')
-    upload_parser.add_argument('--dry-run', action='store_true', help='Ready but do not upload file')
+    upload_parser.add_argument('--dry-run', action='store_true',
+                               help='Ready but do not upload file')
     upload_parser.add_argument('name', help='Name of the experiment', type=str)
     upload_parser.add_argument('file', help='Path to the file to upload', type=str)
     upload_parser.set_defaults(function=upload)
