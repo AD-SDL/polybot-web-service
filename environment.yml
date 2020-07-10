@@ -7,10 +7,11 @@ dependencies:
   - flask==1.1.*
   - matplotlib>3
   - pandas==1.*
+  - pydantic>=1.15
   - pytest
   - pytest-cov
   - pytest-flask
   - flake8
   - pip
-  - pip: 
+  - pip:
     - -e .

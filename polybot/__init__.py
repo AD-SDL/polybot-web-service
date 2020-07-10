@@ -26,4 +26,8 @@ def create_app(test_config: dict = None) -> Flask:
         return render_template('home.html',
                                message=f'Running on {platform.node()} since {start_time}')
 
+    # Load the blueprints
+    from .views import ingest
+    app.register_blueprint(ingest.bp)
+
     return app
