@@ -5,11 +5,9 @@ from subprocess import Popen
 from pytest import fixture
 
 from polybot.config import settings
-from polybot.models import Sample
 from polybot.robot import send_new_sample
 
 _test_dir = Path(__file__).parent
-_test_sample = str(Path(__file__).parent / 'files' / 'example-sample.json')
 
 
 @fixture(autouse=True)
@@ -22,6 +20,5 @@ def fake_robot():
     proc.kill()
 
 
-def test_submit():
-    sample = Sample.parse_file(_test_sample)
-    send_new_sample(sample)
+def test_submit(example_sample):
+    send_new_sample(example_sample)
