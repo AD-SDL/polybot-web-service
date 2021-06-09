@@ -1,6 +1,6 @@
 # Polybot
 
-[![Build Status](https://travis-ci.com/materials-data-facility/polybot.svg?branch=master)](https://travis-ci.com/materials-data-facility/polybot)
+[![Python package](https://github.com/AD-SDL/polybot-web-service/actions/workflows/python-package.yml/badge.svg)](https://github.com/AD-SDL/polybot-web-service/actions/workflows/python-package.yml)
 [![Coverage Status](https://coveralls.io/repos/github/materials-data-facility/polybot/badge.svg?branch=master)](https://coveralls.io/github/materials-data-facility/polybot?branch=master)
 
 A server for controlling the robot synthesis of thin-film polymeric materials.
