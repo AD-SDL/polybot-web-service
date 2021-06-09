@@ -38,7 +38,7 @@ jobs:
         flake8 .
     - name: Test with pytest
       run: |
-        pytest
+        pytest --cov=polybot
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
