@@ -1,6 +1,6 @@
 from time import sleep
 from pathlib import Path
-from subprocess import Popen, STDOUT
+from subprocess import Popen
 
 from pytest import fixture
 
