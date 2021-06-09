@@ -1,5 +1,5 @@
-flask>=1.1
 matplotlib>3
 pandas>=1
 pydantic>=1.5
 requests>=2.24
+fastapi

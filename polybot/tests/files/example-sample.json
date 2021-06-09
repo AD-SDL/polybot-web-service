@@ -1,0 +1,26 @@
+{
+    "id": "cc0d00fa0a",
+    "score": -1.0,
+    "status": "created",
+    "location": [],
+    "timestamp": [
+        "1623234288.105: |status| created"
+    ],
+    "workflow_file_hash": "42114d6b12",
+    "inputs": {
+        "prepare_solution.V": [
+            25.0,
+            3,
+            4,
+            5
+        ],
+        "prepare_solution.T": 30,
+        "coating_on_top.vel": 2,
+        "coating_on_top.V": 10,
+        "coating_on_top.T": 20,
+        "annealing.t": 10,
+        "annealing.T": 20
+    },
+    "raw_output": {},
+    "processed_output": {}
+}

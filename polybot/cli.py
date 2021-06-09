@@ -6,6 +6,7 @@ from argparse import ArgumentParser, Namespace
 import requests
 
 from polybot.version import __version__
+from polybot.models import Sample
 
 logger = logging.getLogger(__name__)
 
@@ -14,14 +15,17 @@ def upload(args: Namespace):
     """Upload a file"""
 
     # Read in the file
-    with open(args.file, 'rb') as fp:
-        content = fp.read()
-    logger.info(f'Read in a {len(content) / 1024: .2f} kB file')
+    sample = Sample.parse_file(args.file)
+    logger.info(f'Read in sample {sample.id} from {args.file}')
 
     # Make the upload package
     url = f'{args.host_url}/ingest'
     logger.info(f'Uploading file to {url}')
-    result = requests.post(url, data={'name': args.name}, files={'file': (args.file, content)})
+    if args.dry_run:
+        logger.warning('Not submitting request for a dry run.')
+        return
+
+    result = requests.post(url, json=sample.json())
     logger.info(f'Request status: {result.status_code}')
     if result.status_code == 200:
         print(result.json())
@@ -44,7 +48,6 @@ def create_parser() -> ArgumentParser:
     upload_parser = sub_parser.add_parser('upload', help='Upload files to polybot')
     upload_parser.add_argument('--dry-run', action='store_true',
                                help='Ready but do not upload file')
-    upload_parser.add_argument('name', help='Name of the experiment', type=str)
     upload_parser.add_argument('file', help='Path to the file to upload', type=str)
     upload_parser.set_defaults(function=upload)
     return parser

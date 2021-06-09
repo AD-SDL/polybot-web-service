@@ -1,19 +1,16 @@
 """Data models for objects used by this service"""
-
-from datetime import datetime
-from typing import Optional, List
+from typing import List
 
 from pydantic import BaseModel, Field
 
 
-class UVVisExperiment(BaseModel):
+class Sample(BaseModel):
     """Description for a UVVis experiment"""
 
-    # Metadata about the experiment
-    name: str = Field(..., description='Name for the experiment')
-    date_created: datetime = Field(datetime.utcnow(), description='Date this result was created')
-    sample_description: dict = Field({}, description='Description of the sample')
+    # Sample identifiers
+    id: str = Field(..., description="Unique identifier for this sample used across robotic systems",
+                    regex=r'[0-9a-f]{10}')
 
-    # Key data about the experiment
-    wavelength: Optional[List[float]] = Field(None, description='Wavelength of incident radiation')
-    absorption: Optional[List[float]] = Field(None, description='Absorption of the sample')
+    # State information
+    status: str = Field(None, description="Status of the sample")
+    timestamp: List[str] = Field(default_factory=list, description='List of times sample object was modified')
