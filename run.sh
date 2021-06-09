@@ -1,2 +1,1 @@
-export FLASK_APP=polybot
-flask run
+uvicorn polybot.fastapi:app

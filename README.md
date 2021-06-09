@@ -30,6 +30,6 @@ Polybot comes with a command line interface, also named "`polybot`".
 
 At present, the only command is to upload data to the server:
 
-`polybot upload experiment_name file.csv`
+`polybot upload file.json`
 
 Call `polybot --help` to see the full list of operations.

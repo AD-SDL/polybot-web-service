@@ -5,6 +5,7 @@ channels:
 dependencies:
   - python==3.9.*
   - fastapi
+  - uvicorn
   - matplotlib>3
   - pandas==1.*
   - pydantic
