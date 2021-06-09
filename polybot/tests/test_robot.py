@@ -15,11 +15,10 @@ _test_sample = str(Path(__file__).parent / 'files' / 'example-sample.json')
 @fixture(autouse=True)
 def fake_robot():
     settings.robot_url = "http://localhost:8152/"
-    with open('fake-robot.log', 'w') as fp:
-        proc = Popen(['uvicorn', '--port', '8152', '--app-dir', _test_dir, 'fake_robot:app'],
-                     stdout=fp, stderr=STDOUT)
-        sleep(1)
-        yield proc
+    proc = Popen(['uvicorn', '--port', '8152', '--app-dir', _test_dir, 'fake_robot:app'])
+    sleep(1)
+    assert proc.poll() is None, "Uvicorn process died"
+    yield proc
     proc.kill()
 
 
