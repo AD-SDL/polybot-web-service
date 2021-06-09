@@ -27,6 +27,7 @@ def save_sample(sample: Sample, overwrite: bool = True):
         raise ValueError(f"File already exists. Set overwrite=True, if you want to remove it. Path: {path}")
     with open(path, 'w') as fp:
         fp.write(sample.json(indent=2))
+    logger.info(f'Wrote {sample.id} to {path}')
 
 
 def load_samples() -> Iterator[Sample]:
