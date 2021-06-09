@@ -40,6 +40,8 @@ jobs:
       run: |
         pytest --cov=polybot
     - name: Coveralls
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        pip install coveralls
+        coveralls --service=github
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
