@@ -14,6 +14,5 @@ dependencies:
   - flake8
   - pip
   - pip:
+    - r requirements.txt
     - -e .
-    - colmena
-    - glom

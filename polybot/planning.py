@@ -38,7 +38,9 @@ class OptimizationProblem(BaseModel):
         Returns:
             A new sample instance
         """
-        return Sample.parse_file(self.example_sample)
+        new = Sample.parse_file(self.example_sample)
+        new.reset_id()
+        return new
 
 
 class Planner(BaseThinker):
@@ -64,5 +66,5 @@ class Planner(BaseThinker):
             output.inputs[path] = choice
 
         # Send it to the robot
-        send_new_sample(Sample.parse_obj(output))
+        send_new_sample(output)
         return

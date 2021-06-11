@@ -1,5 +1,6 @@
 """Data models for objects used by this service"""
 from typing import List, Dict, Any
+from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
@@ -17,6 +18,11 @@ class Sample(BaseModel):
 
     # Workflow information
     inputs: Dict[str, Any] = Field(default_factory=dict, description="Inputs to the system workflow")
+
+    def reset_id(self):
+        """Generate a new sample ID"""
+        uuid = uuid4()
+        self.id = uuid.hex[-10:]
 
     class Config:
         extra = 'allow'
