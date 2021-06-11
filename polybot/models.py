@@ -1,5 +1,5 @@
 """Data models for objects used by this service"""
-from typing import List
+from typing import List, Dict, Any
 
 from pydantic import BaseModel, Field
 
@@ -14,6 +14,9 @@ class Sample(BaseModel):
     # State information
     status: str = Field(None, description="Status of the sample")
     timestamp: List[str] = Field(default_factory=list, description='List of times sample object was modified')
+
+    # Workflow information
+    inputs: Dict[str, Any] = Field(default_factory=dict, description="Inputs to the system workflow")
 
     class Config:
         extra = 'allow'

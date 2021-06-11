@@ -11,7 +11,6 @@ from colmena.thinker import BaseThinker, result_processor
 from colmena.models import Result
 from pydantic import BaseModel, Field
 import numpy as np
-import glom
 
 from polybot.models import Sample
 from polybot.robot import send_new_sample
@@ -22,14 +21,15 @@ class OptimizationProblem(BaseModel):
 
     # Define the search space
     example_sample: Path = Field(..., description="Path to an example sample")
-    inputs: List[str] = Field(..., description="List of input fields that are resolved against sample documents "
-                                               "using glom")
+    # TODO (wardlt): Make inputs a List of Lists to specify nested dictionaries?
+    inputs: List[str] = Field(..., description="List of input fields that are resolved against sample documents. "
+                                               "Names of values in the `inputs` dictionary of a sample.")
     search_space: List[Tuple[float, float]] = Field(..., description="Ranges of the variables to be optimized. "
                                                                      "In the same order as inputs")
     points_per_axis: int = Field(32, description="Number of levels per input variable. Used during optimization", ge=2)
 
     # Define the optimization metric
-    output: str = Field(..., description="Output variable. Resolved against sample documents using glom")
+    output: str = Field(..., description="Output variable. Name of values within the the ")
     maximize: bool = Field(True, description="Whether to maximize (or minimize) the target function")
 
     def get_sample_template(self) -> Sample:
@@ -57,11 +57,11 @@ class Planner(BaseThinker):
         """
 
         # Make a choice for each variable
-        output = self.opt_spec.get_sample_template().dict()
+        output = self.opt_spec.get_sample_template()
         for path, (low, high) in zip(self.opt_spec.inputs, self.opt_spec.search_space):
             choices = np.linspace(low, high, self.opt_spec.points_per_axis)
             choice = np.random.choice(choices)
-            glom.assign(output, path, choice)
+            output.inputs[path] = choice
 
         # Send it to the robot
         send_new_sample(Sample.parse_obj(output))
