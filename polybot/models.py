@@ -14,3 +14,6 @@ class Sample(BaseModel):
     # State information
     status: str = Field(None, description="Status of the sample")
     timestamp: List[str] = Field(default_factory=list, description='List of times sample object was modified')
+
+    class Config:
+        extra = 'allow'

@@ -16,3 +16,4 @@ dependencies:
   - pip:
     - -e .
     - colmena
+    - glom

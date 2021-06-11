@@ -7,7 +7,7 @@ from pytest import fixture
 from polybot.models import Sample
 from polybot.config import settings
 
-_test_sample = str(Path(__file__).parent / 'files' / 'example-sample.json')
+sample_path = str(Path(__file__).parent / 'files' / 'example-sample.json')
 _test_dir = Path(__file__).parent
 
 
@@ -23,4 +23,4 @@ def fake_robot():
 
 @fixture()
 def example_sample() -> Sample:
-    return Sample.parse_file(_test_sample)
+    return Sample.parse_file(sample_path)

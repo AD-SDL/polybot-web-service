@@ -3,3 +3,4 @@ pandas>=1
 pydantic>=1.5
 requests>=2.24
 fastapi
+glom
