@@ -39,6 +39,6 @@ def upload_data(sample: Sample):
         queue.send_result(
             result, topic='robot'
         )
-        logger.info(f'Sent result to the planning service')
+        logger.info('Sent result to the planning service')
 
     return {'success': True, 'sample': sample.id}
