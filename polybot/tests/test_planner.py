@@ -1,13 +1,12 @@
 """Make sure the planning system works"""
 import logging
 from time import sleep
-from typing import Tuple
 
 from colmena.models import Result
-from colmena.redis.queue import ClientQueues, MethodServerQueues, make_queue_pairs
 from pytest import fixture
 
 from polybot.planning import OptimizationProblem, Planner
+from polybot.config import settings
 
 from conftest import sample_path
 
@@ -23,15 +22,10 @@ def opt_config() -> OptimizationProblem:
     )
 
 
-@fixture
-def queues() -> Tuple[ClientQueues, MethodServerQueues]:
-    """Queues used to communicate results to Colmena"""
-    return make_queue_pairs('localhost', topics=['robot'])
-
-
-def test_generate(fake_robot, opt_config, queues, fastapi_client, example_sample, caplog):
+def test_generate(fake_robot, opt_config, fastapi_client, example_sample, caplog):
     # Make the planner
-    client_q, server_q = queues
+    client_q = settings.make_client_queue()
+    server_q = settings.make_server_queue()
     planner = Planner(client_q, opt_config)
 
     # Launch it as a Thread

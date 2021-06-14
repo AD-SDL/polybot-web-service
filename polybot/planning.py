@@ -32,6 +32,9 @@ class OptimizationProblem(BaseModel):
     output: str = Field(..., description="Output variable. Name of values within the `processed_outputs` dictionary")
     maximize: bool = Field(True, description="Whether to maximize (or minimize) the target function")
 
+    class Config:
+        extras
+
     def get_sample_template(self) -> Sample:
         """Get an template for a new sample
 

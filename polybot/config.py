@@ -1,7 +1,9 @@
 """Settings for the service"""
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
+from urllib.parse import urlparse
 
+from colmena.redis.queue import ClientQueues, MethodServerQueues
 from pydantic import BaseSettings, Field, HttpUrl, RedisDsn
 
 _run_folder = Path.cwd()
@@ -23,6 +25,41 @@ class Settings(BaseSettings):
 
     # Interface with the controller
     robot_url: Optional[HttpUrl] = Field(None, description="Address of the robotic controller system")
+
+    @property
+    def redis_info(self) -> Tuple[str, int]:
+        """The redis connection information
+
+        Returns:
+            - Redis hostname
+            - Redis port
+        """
+        if self.redis_address is None:
+            raise AttributeError('Redis URL is not defined!')
+        res = urlparse(settings.redis_address)
+        port = 6379 if res.port is None else res.port
+        return res.hostname, port
+
+    class Config:
+        env_file: str = ".env"
+
+    def make_client_queue(self) -> ClientQueues:
+        """Make the client side of the event queue
+
+        Returns:
+            Client side of queues with the proper defaults
+        """
+        hostname, port = self.redis_info
+        return ClientQueues(hostname, port, name='polybot', topics=['robot'])
+
+    def make_server_queue(self) -> MethodServerQueues:
+        """Make the server side of the event queue
+
+        Returns:
+            Server side of the queue with the proper defaults
+        """
+        hostname, port = self.redis_info
+        return MethodServerQueues(hostname, port, name='polybot', topics=['robot'])
 
 
 settings = Settings()
