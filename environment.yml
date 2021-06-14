@@ -14,5 +14,5 @@ dependencies:
   - flake8
   - pip
   - pip:
-    - r requirements.txt
+    - -r requirements.txt
     - -e .
