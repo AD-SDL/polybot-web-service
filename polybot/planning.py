@@ -33,7 +33,7 @@ class OptimizationProblem(BaseModel):
     maximize: bool = Field(True, description="Whether to maximize (or minimize) the target function")
 
     class Config:
-        extras
+        extras = 'forbid'
 
     def get_sample_template(self) -> Sample:
         """Get an template for a new sample
