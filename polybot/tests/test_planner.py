@@ -29,7 +29,7 @@ def queues() -> Tuple[ClientQueues, MethodServerQueues]:
     return make_queue_pairs('localhost', topics=['robot'])
 
 
-def test_generate(fake_robot, opt_config, queues, caplog):
+def test_generate(fake_robot, opt_config, queues, fastapi_client, example_sample, caplog):
     # Make the planner
     client_q, server_q = queues
     planner = Planner(client_q, opt_config)
@@ -41,6 +41,16 @@ def test_generate(fake_robot, opt_config, queues, caplog):
         with caplog.at_level(logging.INFO):
             server_q.send_result(Result(((0,), {})), topic='robot')
             sleep(1)  # For the other thread to catch up
+
+        # Make sure the server responded by sending a record to the "robot"
+        assert any("Sending" in i.message for i in caplog.records[-5:])
+
+        # Test sending via the REST API
+        caplog.clear()
+        with caplog.at_level(logging.INFO):
+            res = fastapi_client.post("/ingest", json=example_sample.dict(), allow_redirects=True)
+            assert res.status_code == 200
+            sleep(2)  # Multiple threads have to complete
 
         # Make sure the server responded by sending a record to the "robot"
         assert any("Sending" in i.message for i in caplog.records[-5:])

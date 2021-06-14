@@ -29,7 +29,7 @@ class OptimizationProblem(BaseModel):
     points_per_axis: int = Field(32, description="Number of levels per input variable. Used during optimization", ge=2)
 
     # Define the optimization metric
-    output: str = Field(..., description="Output variable. Name of values within the the ")
+    output: str = Field(..., description="Output variable. Name of values within the `processed_outputs` dictionary")
     maximize: bool = Field(True, description="Whether to maximize (or minimize) the target function")
 
     def get_sample_template(self) -> Sample:
