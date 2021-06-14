@@ -14,6 +14,7 @@ def sample_dir(tmpdir):
 def test_save(example_sample):
     save_sample(example_sample)
     assert settings.sample_folder.joinpath(f'{example_sample.id}.json').is_file()
+    save_sample(example_sample, overwrite=True)
     with raises(ValueError):
         save_sample(example_sample, overwrite=False)
 
