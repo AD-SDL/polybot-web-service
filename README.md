@@ -22,7 +22,7 @@ which you can use to build the environment using `pip`:
 
 The web service is built from three smaller services.
 
-- Redis: Launch Redis and record the 
+- Redis: Launch Redis as normal: `redis-server`
 - Web Service: Launch FastAPI using Uvicorn: `uvicorn polybot.fastapi:app`
 - AI planner: Launch using the CLI: `polybot planner opt_spec.json`
 
