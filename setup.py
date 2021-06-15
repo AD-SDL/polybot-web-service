@@ -18,9 +18,6 @@ setup(
     description='Server to analyze, monitor and control robotic experiments performed at CNM',
     install_requires=requirements,
     python_requires=">=3.7",
-    package_data={
-        'polybot': ['templates/*.html']
-    },
     entry_points={
         'console_scripts': [
             'polybot = polybot.cli:main'
@@ -38,5 +35,5 @@ setup(
     author='Logan Ward',
     author_email='lward@anl.gov',
     license="Apache License, Version 2.0",
-    url="https://github.com/materials-data-facility/polybot"
+    url="https://github.com/AD-SDL/polybot-web-service"
 )
