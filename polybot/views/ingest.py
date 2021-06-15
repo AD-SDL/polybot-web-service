@@ -22,7 +22,7 @@ def upload_data(sample: Sample):
 
     # Send the result to the planning service
     #  We use Colmena-formatted messages in a Redis queue
-    if settings.redis_address is not None:
+    if settings.redis_url is not None:
         queue = settings.make_server_queue()
         result = Result(((None,), {}))
         result.set_result(sample, 0)

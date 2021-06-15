@@ -24,7 +24,7 @@ def test_settings():
     settings.sample_folder = sample_dir
 
     # Set up the test Redis service
-    settings.redis_address = "rediss://localhost"
+    settings.redis_url = "rediss://localhost"
 
 
 @fixture()

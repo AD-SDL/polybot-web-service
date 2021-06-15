@@ -20,8 +20,8 @@ class Settings(BaseSettings):
     log_size: int = Field(1, description="Maximum log size in MB")
 
     # Interface between FastAPI and planning services
-    redis_address: Optional[RedisDsn] = Field(None, description="URL of the redis service. Used to send messages "
-                                                                "between web and planning services")
+    redis_url: Optional[RedisDsn] = Field(None, description="URL of the redis service. Used to send messages "
+                                                            "between web and planning services")
 
     # Interface with the controller
     robot_url: Optional[HttpUrl] = Field(None, description="Address of the robotic controller system")
@@ -34,9 +34,9 @@ class Settings(BaseSettings):
             - Redis hostname
             - Redis port
         """
-        if self.redis_address is None:
+        if self.redis_url is None:
             raise AttributeError('Redis URL is not defined!')
-        res = urlparse(settings.redis_address)
+        res = urlparse(settings.redis_url)
         port = 6379 if res.port is None else res.port
         return res.hostname, port
 
