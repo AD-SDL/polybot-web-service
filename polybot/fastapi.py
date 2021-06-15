@@ -15,6 +15,10 @@ _start_time = datetime.now()
 app = FastAPI()
 app.include_router(ingest.router)
 
+# Make the output directory
+settings.sample_folder.mkdir(exist_ok=True)
+logger.info(f'Saving output files to {settings.sample_folder.absolute()}')
+
 # Define the logging, if desired
 if settings.log_name is not None:
     logging.basicConfig(

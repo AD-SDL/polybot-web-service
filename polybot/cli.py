@@ -27,7 +27,7 @@ def upload(args: Namespace):
         logger.warning('Not submitting request for a dry run.')
         return
 
-    result = requests.post(url, json=sample.json())
+    result = requests.post(url, json=sample.dict())
     logger.info(f'Request status: {result.status_code}')
     if result.status_code == 200:
         print(result.json())
