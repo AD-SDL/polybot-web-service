@@ -21,7 +21,7 @@ def upload(args: Namespace):
     logger.info(f'Read in sample {sample.id} from {args.file}')
 
     # Make the upload package
-    url = f'{args.host_url}/ingest'
+    url = f'{args.url}/ingest'
     logger.info(f'Uploading file to {url}')
     if args.dry_run:
         logger.warning('Not submitting request for a dry run.')
@@ -45,7 +45,13 @@ def launch_planner(args: Namespace):
     # Start the planner process
     client_q = settings.make_client_queue()
     planner = Planner(client_q, opt_info, daemon=True)
-    planner.run()  # Run in the main thread
+    planner.start()  # Run in a separate thread
+
+    # Wait until the planner finishes or timeout is reached
+    try:
+        planner.join(timeout=args.timeout)
+    finally:
+        planner.done.set()  # Tells the planner to shutdown
 
 
 def create_parser() -> ArgumentParser:
@@ -64,11 +70,14 @@ def create_parser() -> ArgumentParser:
     upload_parser = sub_parser.add_parser('upload', help='Upload files to polybot')
     upload_parser.add_argument('--dry-run', action='store_true',
                                help='Ready but do not upload file')
+    upload_parser.add_argument('--url', default='http://localhost:8152/', help='URL of the web service')
     upload_parser.add_argument('file', help='Path to the file to upload', type=str)
     upload_parser.set_defaults(function=upload)
 
     # Launch the planning service
     planner_parser = sub_parser.add_parser('planner', help='Launch the planning service')
+    planner_parser.add_argument('--timeout', default=None, type=float, help='Maximum runtime for the planning service. '
+                                                                            'Used for debugging.')
     planner_parser.add_argument("opt_config", help="Path to the optimization configuration file.")
     planner_parser.set_defaults(function=launch_planner)
     return parser
