@@ -44,7 +44,7 @@ def launch_planner(args: Namespace):
 
     # Start the planner process
     client_q = settings.make_client_queue()
-    planner = Planner(client_q, opt_info)
+    planner = Planner(client_q, opt_info, daemon=True)
     planner.run()  # Run in the main thread
 
 
@@ -70,7 +70,7 @@ def create_parser() -> ArgumentParser:
     # Launch the planning service
     planner_parser = sub_parser.add_parser('planner', help='Launch the planning service')
     planner_parser.add_argument("opt_config", help="Path to the optimization configuration file.")
-    upload_parser.set_defaults(function=launch_planner)
+    planner_parser.set_defaults(function=launch_planner)
     return parser
 
 

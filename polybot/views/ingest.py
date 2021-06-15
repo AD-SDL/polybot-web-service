@@ -1,10 +1,8 @@
 """Routes related to ingesting data from the robot"""
-from urllib.parse import urlparse
 import logging
 
 from fastapi import APIRouter
 from colmena.models import Result
-from colmena.redis.queue import MethodServerQueues
 
 from polybot.models import Sample
 from polybot.config import settings

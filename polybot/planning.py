@@ -49,8 +49,8 @@ class OptimizationProblem(BaseModel):
 class Planner(BaseThinker):
     """Class that manages the experiments and computations performed by the PolyBot System"""
 
-    def __init__(self, queues: ClientQueues, opt_spec: OptimizationProblem):
-        super().__init__(queues)
+    def __init__(self, queues: ClientQueues, opt_spec: OptimizationProblem, daemon: bool = False):
+        super().__init__(queues, daemon=daemon)
         self.opt_spec = opt_spec
 
     @result_processor(topic='robot')
