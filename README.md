@@ -20,16 +20,23 @@ which you can use to build the environment using `pip`:
 
 ## Running Polybot
 
-Activate the environment, if you used Anaconda,
-and then call `./run.sh` to 
-launch a server that is accessible from localhost only.
+The web service is built from three smaller services.
 
-## Using Polybot
+- Redis: Launch Redis and record the 
+- Web Service: Launch FastAPI using Uvicorn: `uvicorn polybot.fastapi:app`
+- AI planner: Launch using the CLI: `polybot planner opt_spec.json`
 
-Polybot comes with a command line interface, also named "`polybot`".
+### Configuring PolyBot
 
-At present, the only command is to upload data to the server:
+The web service and planner are configured using environment variables, which can be stored in the `.env` file in the run directory.
+Key variables include:
 
-`polybot upload file.json`
+- `ROBOT_URL`: URL of the Robot Scheduler
+- `REDIS_URL`: URL of the Redis queue
+- `LOG_NAME`: Name of the log file
 
-Call `polybot --help` to see the full list of operations.
+Full options are in [`polybot/config.py`](./polybot/config.py).
+
+The planning agent is also configured using an "optimization specification" JSON file (note `opt_spec.json` above).
+The specification includes the names of input variables and a definition of a template workflow specification.
+Full details are expressed in the `OptimizationProblem` speficiation in [`polybot/planning.py`](./polybot/planning.py).
