@@ -34,7 +34,7 @@ def send_new_sample(sample: Sample):
 
     # Check if the result was
     if res.status_code != 200:
-        raise ValueError(f'Failure to send new sample: Error: {res.text}')
+        raise ValueError(f'Failure to send new sample. Error: {res.text}')
     out = res.json()
     if out['status'] != 'success':
         raise ValueError(f'Failure to send new sample. Error: {out.get("error")}')

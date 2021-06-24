@@ -46,12 +46,24 @@ class OptimizationProblem(BaseModel):
         return new
 
 
-class Planner(BaseThinker):
-    """Class that manages the experiments and computations performed by the PolyBot System"""
+class BasePlanner(BaseThinker):
+    """Base class for planning algorithms based on the `Colmena BaseThinker
+    <https://colmena.readthedocs.io/en/latest/how-to.html#creating-a-thinker-application>`_ class.
+
+    Subclasses should provide the optimization specification to the initializer of this class
+    so that it is available as the `opt_spec` attribute.
+
+    There are no requirements on how you implement the planning algorithm, but you may at least want an agent
+    waiting for results with the "robot" topic.
+    """
 
     def __init__(self, queues: ClientQueues, opt_spec: OptimizationProblem, daemon: bool = False):
         super().__init__(queues, daemon=daemon)
         self.opt_spec = opt_spec
+
+
+class RandomPlanner(BasePlanner):
+    """Submit a randomly-selected point from the search space each time a new result is completed"""
 
     @result_processor(topic='robot')
     def robot_result_handler(self, _: Result):
@@ -60,7 +72,6 @@ class Planner(BaseThinker):
         Args:
             _: Result that is not actually used for now.
         """
-
         # Make a choice for each variable
         output = self.opt_spec.get_sample_template()
         for path, (low, high) in zip(self.opt_spec.inputs, self.opt_spec.search_space):

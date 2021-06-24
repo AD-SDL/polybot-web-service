@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 
 import requests
 
-from polybot.planning import OptimizationProblem, Planner
+from polybot.planning import OptimizationProblem, RandomPlanner
 from polybot.version import __version__
 from polybot.models import Sample
 from polybot.config import settings
@@ -44,7 +44,7 @@ def launch_planner(args: Namespace):
 
     # Start the planner process
     client_q = settings.make_client_queue()
-    planner = Planner(client_q, opt_info, daemon=True)
+    planner = RandomPlanner(client_q, opt_info, daemon=True)
     planner.start()  # Run in a separate thread
 
     # Wait until the planner finishes or timeout is reached

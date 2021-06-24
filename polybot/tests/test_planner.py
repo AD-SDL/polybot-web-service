@@ -5,7 +5,7 @@ from time import sleep
 from colmena.models import Result
 from pytest import fixture
 
-from polybot.planning import OptimizationProblem, Planner
+from polybot.planning import OptimizationProblem, RandomPlanner
 from polybot.config import settings
 
 from conftest import sample_path
@@ -26,7 +26,7 @@ def test_generate(fake_robot, opt_config, fastapi_client, example_sample, caplog
     # Make the planner
     client_q = settings.make_client_queue()
     server_q = settings.make_server_queue()
-    planner = Planner(client_q, opt_config)
+    planner = RandomPlanner(client_q, opt_config)
 
     # Launch it as a Thread
     planner.start()
