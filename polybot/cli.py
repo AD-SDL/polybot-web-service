@@ -54,7 +54,7 @@ def launch_planner(args: Namespace):
 
     # Start the planner process
     client_q = settings.make_client_queue()
-    planner = cls(client_q, opt_info, daemon=True)
+    planner = cls(client_q, opt_info, **opt_info.planner_options, daemon=True)
     planner.start()  # Run in a separate thread
 
     # Wait until the planner finishes or timeout is reached

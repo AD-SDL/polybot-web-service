@@ -28,7 +28,7 @@ The web service is built from three smaller services.
 
 ### Configuring PolyBot
 
-The web service and planner are configured using environment variables, which can be stored in the `.env` file in the run directory.
+Configure the web service and planner using environment variables, which can be stored in the `.env` file in the run directory.
 Key variables include:
 
 - `ROBOT_URL`: URL of the Robot Scheduler
@@ -37,6 +37,20 @@ Key variables include:
 
 Full options are in [`polybot/config.py`](./polybot/config.py).
 
-The planning agent is also configured using an "optimization specification" JSON file (note `opt_spec.json` above).
-The specification includes the names of input variables and a definition of a template workflow specification.
-Full details are expressed in the `OptimizationProblem` speficiation in [`polybot/planning.py`](./polybot/planning.py).
+An "optimization specification" JSON file (note `opt_spec.json` above) provides additional details to the AI planning algorithm.
+The specification includes the names of input variables and a path to a template workflow.
+The `OptimizationProblem` specification in [`polybot/planning.py`](./polybot/planning.py) includes the full details.
+
+### Designing Planning Algorithms
+
+The default AI planning algorithm randomly selects a new experiment from the search space once a previous experiment completes,
+but there is significant flexibility to write more complex algorithms.
+Define a new planning algorithm by implementing a new `BasePlanner` and supplying a path to that file when launching polybot.
+For example, use a planning class named `BOPlanner` stored in a python file named `planner.py` by calling
+
+```bash
+polybot planner --planning-class planner:BOPlanner
+```
+
+Polybot uses [Colmena](http://colmena.rtfd.org/) to express planning algorithms.
+We'll include more details and examples on how to make Colmena work for planning robotic experiments as we learn more.
