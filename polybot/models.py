@@ -19,6 +19,11 @@ class Sample(BaseModel):
     # Workflow information
     inputs: Dict[str, Any] = Field(default_factory=dict, description="Inputs to the system workflow")
 
+    # Output data
+    raw_output: Dict[str, Any] = Field(default_factory=dict, description="Data as recorded on an instrument")
+    processed_output: Dict[str, Any] = Field(default_factory=dict,
+                                             description="Summarized or post-processed versions of raw data")
+
     def reset_id(self):
         """Generate a new sample ID"""
         uuid = uuid4()

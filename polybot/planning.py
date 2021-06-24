@@ -33,6 +33,8 @@ class OptimizationProblem(BaseModel):
     planner_options: Dict = Field(default_factory=dict, description='Any options for the planning algorithm')
 
     # Define the optimization metric
+    # TODO (wardlt): Should we dare cross into multi-objective optimization in this document or leave it up to
+    #    the implementation of the Planner?
     output: str = Field(..., description="Output variable. Name of values within the `processed_outputs` dictionary")
     maximize: bool = Field(True, description="Whether to maximize (or minimize) the target function")
 
@@ -60,7 +62,15 @@ class BasePlanner(BaseThinker):
     :class:`OptimizationProblem` JSON document.
 
     There are no requirements on how you implement the planning algorithm, but you may at least want an agent
-    waiting for results with the "robot" topic.
+    waiting for results with the "robot" topic. For example,
+
+    .. code: python
+
+        @result_processor(topic='robot')
+        def robot_result_handler(self, _: Result):
+            output = self.opt_spec.get_sample_template()
+            send_send_new_sample(output)
+
     """
 
     def __init__(self, queues: ClientQueues, opt_spec: OptimizationProblem, daemon: bool = False):
