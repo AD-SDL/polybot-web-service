@@ -1,11 +1,13 @@
 """Command line interface for polybot"""
 
+import re
 import logging
+import importlib
 from argparse import ArgumentParser, Namespace
 
 import requests
 
-from polybot.planning import OptimizationProblem, RandomPlanner
+from polybot.planning import OptimizationProblem
 from polybot.version import __version__
 from polybot.models import Sample
 from polybot.config import settings
@@ -42,9 +44,17 @@ def launch_planner(args: Namespace):
     opt_info = OptimizationProblem.parse_file(args.opt_config)
     logger.info(f'Loaded optimization configuration from {args.opt_config}')
 
+    # Retrieve the target class
+    if re.match(r'(?:\w+\.?)+\w:\w+', args.planning_class) is None:
+        raise ValueError(f'Planning class name "{args.planning_class}" not in required format: module.path:ClassName')
+    module_name, class_name = args.planning_class.split(":")
+    mod = importlib.import_module(module_name)
+    cls = getattr(mod, class_name)
+    logger.info(f'Loaded planning class: {cls}')
+
     # Start the planner process
     client_q = settings.make_client_queue()
-    planner = RandomPlanner(client_q, opt_info, daemon=True)
+    planner = cls(client_q, opt_info, daemon=True)
     planner.start()  # Run in a separate thread
 
     # Wait until the planner finishes or timeout is reached
@@ -76,6 +86,8 @@ def create_parser() -> ArgumentParser:
 
     # Launch the planning service
     planner_parser = sub_parser.add_parser('planner', help='Launch the planning service')
+    planner_parser.add_argument('--planning-class', '-p', default='polybot.planning:RandomPlanner',
+                                help='Class defining the planning algorithm in format: module.path:ClassName')
     planner_parser.add_argument('--timeout', default=None, type=float, help='Maximum runtime for the planning service. '
                                                                             'Used for debugging.')
     planner_parser.add_argument("opt_config", help="Path to the optimization configuration file.")
