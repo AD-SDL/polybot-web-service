@@ -14,7 +14,7 @@ from polybot.planning import BasePlanner
 
 def run_inference(gpr: GaussianProcessRegressor, search_x: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """Run inference on a machine learning model
-    
+
     Args:
         gpr: Gaussian process regression model
         search_x: Search space to be evalauted
@@ -85,7 +85,7 @@ class BOPlanner(BasePlanner):
         output = self.opt_spec.search_template.create_new_sample()
         for p, x in zip(self.opt_spec.search_template.input_columns, best_point):
             output.inputs[p] = x
-        self.logger.info(f'Sending a new sample to the robot')
+        self.logger.info('Sending a new sample to the robot')
         send_new_sample(output)
 
     def generate_training_set(self) -> Tuple[np.ndarray, np.ndarray]:
