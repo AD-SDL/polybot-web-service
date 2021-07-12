@@ -31,5 +31,5 @@ def test_submit(example_sample, mock_post):
 
 
 def test_mock(example_sample):
-    settings.robot_url = 'mock'
+    settings.robot_url = 'http://mock.com'
     send_new_sample(example_sample)
