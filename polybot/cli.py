@@ -1,13 +1,13 @@
 """Command line interface for polybot"""
-
+import sys
 import re
 import logging
 import importlib
 from argparse import ArgumentParser, Namespace
 from typing import Optional
 
-import requests
 import yaml
+import requests
 from colmena.task_server.base import BaseTaskServer
 
 from polybot.planning import OptimizationProblem
@@ -65,7 +65,7 @@ def launch_planner(args: Namespace):
 
     # Start the planner process
     client_q = settings.make_client_queue()
-    planner = cls(client_q, opt_info, **opt_info.planner_options, daemon=True)
+    planner = cls(client_q, opt_info, daemon=True)
     planner.start()  # Run in a separate thread
 
     # Wait until the planner finishes or timeout is reached
@@ -85,6 +85,10 @@ def _load_object(path: str):
     Returns:
       The requested object
     """
+    # Add the cwd if not included
+    if sys.path[0] != '':
+        sys.path.insert(0, '')
+
     if re.match(r'(?:\w+\.?)+\w:\w+', path) is None:
         raise ValueError(f'Path "{path}" not in required format: module.path:ClassName')
     module_name, class_name = path.split(":")

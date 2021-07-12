@@ -14,6 +14,9 @@ def _check_if_robot_defined(function: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         if settings.robot_url is None:
             raise ConnectionError('Robot URL is not defined')
+        elif settings.robot_url.lower().startswith('http://mock'):
+            logger.info('Mocking the robot controls')
+            return
         return function(*args, **kwargs)
     return wrapper
 
