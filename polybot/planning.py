@@ -21,7 +21,7 @@ class OptimizationProblem(BaseModel):
 
     # Define the search space
     search_template_path: Path = Field(..., description="Path to the sample template. Defines the input variables "
-                                                   "and the search space for the optimization")
+                                                        "and the search space for the optimization")
 
     # Options the planning algorithm
     planner_options: Dict = Field(default_factory=dict, description='Any options for the planning algorithm')

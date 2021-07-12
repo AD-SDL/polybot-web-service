@@ -11,6 +11,7 @@ from polybot.config import settings
 def mock_post(mocker: MockerFixture) -> MagicMock:
     class FakeReply:
         status_code = 200
+
         def json(self):
             return {'status': 'success'}
 

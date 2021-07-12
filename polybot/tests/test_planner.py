@@ -1,7 +1,6 @@
 """Make sure the planning system works"""
 import logging
 from time import sleep
-from unittest.mock import MagicMock
 
 from colmena.models import Result
 from pytest import fixture
