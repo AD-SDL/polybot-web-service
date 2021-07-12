@@ -1,0 +1,2 @@
+search_template_path: example-template.json  # Comments are supported!
+output: conductivity

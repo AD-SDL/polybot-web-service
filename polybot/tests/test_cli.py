@@ -25,6 +25,7 @@ def test_upload(mocker: MockerFixture):
 
 def test_planner():
     main(['--verbose', 'planner', '--timeout', '1', str(Path(__file__).parent / 'files' / 'opt_spec.json')])
+    main(['--verbose', 'planner', '--timeout', '1', str(Path(__file__).parent / 'files' / 'opt_spec.yaml')])
 
 
 def test_planner_error():

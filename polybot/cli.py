@@ -6,6 +6,7 @@ import importlib
 from argparse import ArgumentParser, Namespace
 
 import requests
+import yaml
 
 from polybot.planning import OptimizationProblem
 from polybot.version import __version__
@@ -41,7 +42,12 @@ def launch_planner(args: Namespace):
     """Launch a planning service"""
 
     # Load in the optimization description
-    opt_info = OptimizationProblem.parse_file(args.opt_config)
+    if args.opt_config.endswith('.yaml') or args.opt_config.endswith('.yml'):
+        with open(args.opt_config) as fp:
+            opt_info = OptimizationProblem.parse_obj(yaml.load(fp, Loader=yaml.SafeLoader))
+    else:
+        opt_info = OptimizationProblem.parse_file(args.opt_config)
+
     logger.info(f'Loaded optimization configuration from {args.opt_config}')
 
     # Retrieve the target class
