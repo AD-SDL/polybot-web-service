@@ -5,11 +5,13 @@ We describe the policy for starting new runs by implementing a
 """
 import random
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Callable
 
-from colmena.redis.queue import ClientQueues
+from colmena.redis.queue import ClientQueues, TaskServerQueues
+from colmena.task_server import ParslTaskServer
 from colmena.thinker import BaseThinker, result_processor
 from colmena.models import Result
+from parsl import Config, ThreadPoolExecutor
 from pydantic import BaseModel, Field
 
 from polybot.models import SampleTemplate
@@ -85,3 +87,28 @@ class RandomPlanner(BasePlanner):
         # Send it to the robot
         send_new_sample(output)
         return
+
+
+def _execute(f: Callable):
+    """Debug function"""
+    return f()
+
+
+def build_thread_pool_executor(queues: TaskServerQueues) -> ParslTaskServer:
+    """Builds a task server that runs a single task on a local thread.
+
+    This server is primarily meant for testing, and has a single task,
+    "execute," that receives a Callable and executes it remotely.
+
+    Args:
+        queues: Queues to use to communicate
+    Returns:
+        A configured task server
+    """
+
+    config = Config(executors=[ThreadPoolExecutor(max_threads=1)])
+    return ParslTaskServer(
+        queues=queues,
+        methods=[_execute],
+        config=config
+    )
