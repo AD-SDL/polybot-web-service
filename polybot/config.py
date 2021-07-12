@@ -1,6 +1,6 @@
 """Settings for the service"""
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from urllib.parse import urlparse
 
 from colmena.redis.queue import ClientQueues, TaskServerQueues
@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     # Interface with the controller
     robot_url: Optional[HttpUrl] = Field(None, description="Address of the robotic controller system")
 
+    # Settings for the Colmena task server
+    task_queues: Optional[List[str]] = Field(['compute'],
+                                             description='Additional task queues to create for the Colmena service')
+
     @property
     def redis_info(self) -> Tuple[str, int]:
         """The redis connection information
@@ -50,7 +54,7 @@ class Settings(BaseSettings):
             Client side of queues with the proper defaults
         """
         hostname, port = self.redis_info
-        return ClientQueues(hostname, port, name='polybot', topics=['robot'])
+        return ClientQueues(hostname, port, name='polybot', topics=['robot'] + self.task_queues)
 
     def make_server_queue(self) -> TaskServerQueues:
         """Make the server side of the event queue
@@ -59,7 +63,7 @@ class Settings(BaseSettings):
             Server side of the queue with the proper defaults
         """
         hostname, port = self.redis_info
-        return TaskServerQueues(hostname, port, name='polybot', topics=['robot'])
+        return TaskServerQueues(hostname, port, name='polybot', topics=['robot'] + self.task_queues)
 
 
 settings = Settings()

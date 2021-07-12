@@ -53,4 +53,86 @@ polybot planner --planning-class planner:BOPlanner
 ```
 
 Polybot uses [Colmena](http://colmena.rtfd.org/) to express planning algorithms.
-We'll include more details and examples on how to make Colmena work for planning robotic experiments as we learn more.
+At minimum, you will need to implement a ["Thinker"](https://colmena.readthedocs.io/en/latest/how-to.html#creating-a-thinker-application)
+that defines the logic for controlling the robot. 
+We briefly describe a few common tasks and how to implement them.
+
+#### Responding to Data from Robot
+
+The web service provides result events with the topic "robot," and you must
+define logic for how to respond to new data becoming available.
+We recommend either explicitly waiting on the results from this topic using the 
+[`self.queue.get_result`](https://colmena.readthedocs.io/en/latest/how-to.html#submitting-tasks) function
+or using the [`@result_processor(topic='robot')`](https://colmena.readthedocs.io/en/latest/thinker.html#result-processing-agents)
+decorate.
+Typically, the function will end by sending a new task to the robot using the 
+[`polybot.robot.send_new_sample`](./polybot/robot.py) function.
+
+#### Performing Computations on Remote Resources
+
+The event-driven system for defining how to respond to robot commands handles executing computations on remote resources.
+
+The first step is to create a ["task server"](https://colmena.readthedocs.io/en/latest/how-to.html#configuring-a-task-server)
+that defines a list of methods which can be run remotely and the resources on which they can execute.
+Create a function that takes a queue object as inputs and then returns a fully defined task server.
+For example, a task server that runs `f(x) = x + 1` on LCRC Bebop would be:
+
+```python
+from parsl.config import Config
+from parsl.providers import SlurmProvider
+from parsl.executors import HighThroughputExecutor
+from colmena.redis.queue import TaskServerQueues
+from colmena.task_server import ParslTaskServer
+
+# Define the workflow configuration
+config = Config(
+    executors=[
+        HighThroughputExecutor(
+            label='compute',
+            prefetch_capacity=0,
+            provider=SlurmProvider(
+                partition='bdwall',
+                init_blocks=0,
+                max_blocks=1,
+                nodes_per_block=1,
+                walltime='48:00:00',
+                scheduler_options="#SBATCH --account=sdl"
+            )
+        )
+    ]
+)
+
+
+def f(x: float) -> float:
+    return x
+
+def make_task_server(queues: TaskServerQueues) -> ParslTaskServer:
+    """Make a task server that serves "f"
+    
+    Args:
+        queues: Queues defining how to communicate tasks with Redis
+    """
+    
+    return ParslTaskServer(
+        queues=queues,  # Gives access to the Redis server 
+        methods=[(f, {'executors': ['compute']})],  # Defines the methods and where they would run
+        config=config  # Provides the compute layout
+    )
+
+
+```
+
+By default, the Redis queues have a "compute" topic used for compute tasks. 
+You can add more by setting the "TASK_QUEUES" environment variable with a list of names.
+
+Use the "compute" topic for sending asynchronous task requests.
+For example, a simple "send then receive" pattern would look like:
+
+```python
+
+@agent
+def sim_worker()
+    self.queues.send_inputs(1., topic='compute', method='f')
+    result = self.queues.get_result(topic='compute')
+    do_something_with_that_knowledge(result.value)
+```

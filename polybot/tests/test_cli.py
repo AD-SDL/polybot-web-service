@@ -24,8 +24,13 @@ def test_upload(mocker: MockerFixture):
 
 
 def test_planner():
+    # Test without a compute server
     main(['--verbose', 'planner', '--timeout', '1', str(Path(__file__).parent / 'files' / 'opt_spec.json')])
     main(['--verbose', 'planner', '--timeout', '1', str(Path(__file__).parent / 'files' / 'opt_spec.yaml')])
+
+    # Test launching a compute server
+    main(['--verbose', 'planner', '--timeout', '1', str(Path(__file__).parent / 'files' / 'opt_spec.json'),
+          '-t', 'polybot.planning:build_thread_pool_executor'])
 
 
 def test_planner_error():

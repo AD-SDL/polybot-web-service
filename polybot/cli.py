@@ -4,9 +4,11 @@ import re
 import logging
 import importlib
 from argparse import ArgumentParser, Namespace
+from typing import Optional
 
 import requests
 import yaml
+from colmena.task_server.base import BaseTaskServer
 
 from polybot.planning import OptimizationProblem
 from polybot.version import __version__
@@ -51,12 +53,15 @@ def launch_planner(args: Namespace):
     logger.info(f'Loaded optimization configuration from {args.opt_config}')
 
     # Retrieve the target class
-    if re.match(r'(?:\w+\.?)+\w:\w+', args.planning_class) is None:
-        raise ValueError(f'Planning class name "{args.planning_class}" not in required format: module.path:ClassName')
-    module_name, class_name = args.planning_class.split(":")
-    mod = importlib.import_module(module_name)
-    cls = getattr(mod, class_name)
+    cls = _load_object(args.planning_class)
     logger.info(f'Loaded planning class: {cls}')
+
+    # Build and launch the Colmena task server, if desired
+    task_server: Optional[BaseTaskServer] = None
+    if args.task_server is not None:
+        build_fn = _load_object(args.task_server)
+        task_server = build_fn(settings.make_server_queue())
+        task_server.start()
 
     # Start the planner process
     client_q = settings.make_client_queue()
@@ -68,6 +73,24 @@ def launch_planner(args: Namespace):
         planner.join(timeout=args.timeout)
     finally:
         planner.done.set()  # Tells the planner to shutdown
+        if task_server is not None:
+            task_server.kill()
+
+
+def _load_object(path: str):
+    """Import a Python objective given path
+
+    Args:
+      path: Path to the object in format ``module.path:ObjectName``
+    Returns:
+      The requested object
+    """
+    if re.match(r'(?:\w+\.?)+\w:\w+', path) is None:
+        raise ValueError(f'Path "{path}" not in required format: module.path:ClassName')
+    module_name, class_name = path.split(":")
+    mod = importlib.import_module(module_name)
+    obj = getattr(mod, class_name)
+    return obj
 
 
 def create_parser() -> ArgumentParser:
@@ -94,6 +117,9 @@ def create_parser() -> ArgumentParser:
     planner_parser = sub_parser.add_parser('planner', help='Launch the planning service')
     planner_parser.add_argument('--planning-class', '-p', default='polybot.planning:RandomPlanner',
                                 help='Class defining the planning algorithm in format: module.path:ClassName')
+    planner_parser.add_argument('--task-server', '-t', default=None,
+                                help='Function that creates a TaskServer given task server queues. '
+                                     'Format: module.path:function_name')
     planner_parser.add_argument('--timeout', default=None, type=float, help='Maximum runtime for the planning service. '
                                                                             'Used for debugging.')
     planner_parser.add_argument("opt_config", help="Path to the optimization configuration file.")
