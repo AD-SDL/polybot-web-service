@@ -28,3 +28,8 @@ def test_submit(example_sample, mock_post):
     settings.robot_url = "http://doesntmatter.com/"
     send_new_sample(example_sample)
     assert mock_post.call_count == 1
+
+
+def test_mock(example_sample):
+    settings.robot_url = 'mock'
+    send_new_sample(example_sample)
