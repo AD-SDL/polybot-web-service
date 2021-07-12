@@ -11,3 +11,8 @@ def test_generate_search_space(example_template):
 
 def test_generate_sample(example_template):
     example_template.create_new_sample()
+
+
+def test_sorted_inputs(example_template):
+    cols = example_template.input_columns
+    assert cols[0] < cols[1]

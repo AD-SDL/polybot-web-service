@@ -54,6 +54,14 @@ class SampleTemplate(Sample):
                                    'Null values indicate parameters that must remain their default values'
     )
 
+    @property
+    def input_columns(self) -> List[str]:
+        """Name of the input columns to the optimization algorithm
+
+        Always returns the columns in the same order
+        """
+        return sorted(self.inputs.keys())
+
     def create_new_sample(self) -> Sample:
         """Get an template for a new sample
 
