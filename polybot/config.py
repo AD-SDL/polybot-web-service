@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional, Tuple
 from urllib.parse import urlparse
 
-from colmena.redis.queue import ClientQueues, MethodServerQueues
+from colmena.redis.queue import ClientQueues, TaskServerQueues
 from pydantic import BaseSettings, Field, HttpUrl, RedisDsn
 
 _run_folder = Path.cwd()
@@ -52,14 +52,14 @@ class Settings(BaseSettings):
         hostname, port = self.redis_info
         return ClientQueues(hostname, port, name='polybot', topics=['robot'])
 
-    def make_server_queue(self) -> MethodServerQueues:
+    def make_server_queue(self) -> TaskServerQueues:
         """Make the server side of the event queue
 
         Returns:
             Server side of the queue with the proper defaults
         """
         hostname, port = self.redis_info
-        return MethodServerQueues(hostname, port, name='polybot', topics=['robot'])
+        return TaskServerQueues(hostname, port, name='polybot', topics=['robot'])
 
 
 settings = Settings()
