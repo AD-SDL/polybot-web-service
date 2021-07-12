@@ -1,0 +1,5 @@
+search_template_path: template.json
+output: conductivity
+planner_options:
+  beta: 1  # Balancing exploration and exploitation
+  chunk_size: 500000  # Size of inference. Lower for better parallelism, reducing memory usage
