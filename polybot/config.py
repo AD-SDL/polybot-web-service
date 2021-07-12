@@ -54,7 +54,8 @@ class Settings(BaseSettings):
             Client side of queues with the proper defaults
         """
         hostname, port = self.redis_info
-        return ClientQueues(hostname, port, name='polybot', topics=['robot'] + self.task_queues)
+        return ClientQueues(hostname, port, name='polybot', topics=['robot'] + self.task_queues,
+                            serialization_method='pickle')
 
     def make_server_queue(self) -> TaskServerQueues:
         """Make the server side of the event queue
