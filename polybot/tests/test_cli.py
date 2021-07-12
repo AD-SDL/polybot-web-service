@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from pytest import raises
+from pytest_mock import MockerFixture
 
 from polybot.cli import main
 from polybot.version import __version__
@@ -8,19 +9,22 @@ from polybot.version import __version__
 _test_sample = str(Path(__file__).parent / 'files' / 'example-sample.json')
 
 
-def test_version(fake_robot, capsys):
+def test_version(capsys):
     main(['version'])
     captured = capsys.readouterr()
     assert __version__ in captured.out
 
 
-def test_upload(fake_robot):
+def test_upload(mocker: MockerFixture):
+    mock = mocker.patch('requests.post')
     main(['upload', '--dry-run', _test_sample])
+    assert mock.call_count == 0
     main(['upload', _test_sample])
+    assert mock.call_count == 1
 
 
 def test_planner():
-    main(['--verbose', 'planner', '--timeout', '5', str(Path(__file__).parent / 'files' / 'opt_spec.json')])
+    main(['--verbose', 'planner', '--timeout', '1', str(Path(__file__).parent / 'files' / 'opt_spec.json')])
 
 
 def test_planner_error():

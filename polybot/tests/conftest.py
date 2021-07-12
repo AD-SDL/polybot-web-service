@@ -1,16 +1,15 @@
 from pathlib import Path
 from shutil import rmtree
-from subprocess import Popen
-from time import sleep
 
 from pytest import fixture
 from fastapi.testclient import TestClient
 
 from polybot.fastapi import app
-from polybot.models import Sample
+from polybot.models import Sample, SampleTemplate
 from polybot.config import settings
 
-sample_path = str(Path(__file__).parent / 'files' / 'example-sample.json')
+file_path = Path(__file__).parent / 'files'
+sample_path = str(file_path / 'example-sample.json')
 _test_dir = Path(__file__).parent
 
 
@@ -28,18 +27,13 @@ def test_settings():
 
 
 @fixture()
-def fake_robot():
-    settings.robot_url = "http://localhost:8152/"
-    proc = Popen(['uvicorn', '--port', '8152', '--app-dir', _test_dir, 'fake_robot:app'])
-    sleep(1)
-    assert proc.poll() is None, "Uvicorn process died"
-    yield proc
-    proc.kill()
+def example_sample() -> Sample:
+    return Sample.parse_file(sample_path)
 
 
 @fixture()
-def example_sample() -> Sample:
-    return Sample.parse_file(sample_path)
+def example_template() -> SampleTemplate:
+    return SampleTemplate.parse_file(file_path / 'example-template.json')
 
 
 @fixture()

@@ -1,8 +1,4 @@
 {
-  "example_sample": "template.json",
-  "inputs": ["prepare_solution.T"],
-  "search_space": [
-    [30, 50]
-  ],
+  "search_template_path": "example-template.json",
   "output": "conductivity"
 }

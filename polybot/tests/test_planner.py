@@ -1,43 +1,45 @@
 """Make sure the planning system works"""
 import logging
 from time import sleep
+from unittest.mock import MagicMock
 
 from colmena.models import Result
 from pytest import fixture
+from pytest_mock import MockerFixture
 
 from polybot.planning import OptimizationProblem, RandomPlanner
 from polybot.config import settings
 
-from conftest import sample_path
+from conftest import file_path
 
 
 @fixture
 def opt_config() -> OptimizationProblem:
     """Sample configuration for the optimization problem"""
     return OptimizationProblem(
-        example_sample=sample_path,
-        inputs=['inputs.1'],
-        search_space=[(25, 45)],
+        search_template_path=file_path / "example-template.json",
         output='processed_outputs.conductivity'
     )
 
 
-def test_generate(fake_robot, opt_config, fastapi_client, example_sample, caplog):
+def test_generate(mocker: MockerFixture, opt_config, fastapi_client, example_sample, caplog):
+    # Mock the send_new_sample in the planning library
+    fake_robot = mocker.patch('polybot.planning.send_new_sample')
+
     # Make the planner
     client_q = settings.make_client_queue()
     server_q = settings.make_server_queue()
-    planner = RandomPlanner(client_q, opt_config)
+    planner = RandomPlanner(client_q, opt_config, daemon=True)
 
     # Launch it as a Thread
     planner.start()
     try:
         # Test sending in a new result
-        with caplog.at_level(logging.INFO):
-            server_q.send_result(Result(((0,), {})), topic='robot')
-            sleep(1)  # For the other thread to catch up
+        server_q.send_result(Result(((0,), {})), topic='robot')
+        sleep(1)  # For the other thread to catch up
 
         # Make sure the server responded by sending a record to the "robot"
-        assert any("Sending" in i.message for i in caplog.records[-5:])
+        assert fake_robot.call_count == 1, planner.is_alive()
 
         # Test sending via the REST API
         caplog.clear()
@@ -47,7 +49,7 @@ def test_generate(fake_robot, opt_config, fastapi_client, example_sample, caplog
             sleep(2)  # Multiple threads have to complete
 
         # Make sure the server responded by sending a record to the "robot"
-        assert any("Sending" in i.message for i in caplog.records[-5:])
+        assert fake_robot.call_count == 2, planner.is_alive()
     finally:
         # Kill the planning service
         planner.done.set()

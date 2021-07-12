@@ -1,0 +1,83 @@
+{
+  "score": 0,
+  "workflow_file_hash": "33fdd1dbed",
+  "inputs": {
+    "prepare_solution.V_sol[0]": 1.0,
+    "prepare_solution.V_sol[1]": 0.05,
+    "prepare_solution.V_sol[2]": 0.05,
+    "prepare_solution.T": 20,
+    "coating_on_top.vel": 0.5,
+    "coating_on_top.V": 0.005,
+    "coating_on_top.T": 60.0,
+    "annealing_coat.t": 60,
+    "annealing_coat.T": 130,
+    "post_processing.sol": 1,
+    "post_processing.vel": 0.5,
+    "post_processing.V": 0.015,
+    "post_processing.T": 25.0,
+    "annealing_post.t": 60,
+    "annealing_post.T": 130
+  },
+  "_inputs_info": {
+    "prepare_solution.V_sol[0]": "Volume of PEDOTPSS (μL),  [constant]",
+    "prepare_solution.V_sol[1]": "Volume of DMSO (μL),  (0.0, 0.05]",
+    "prepare_solution.V_sol[2]": "Volume of EG (μL),  (0.0, 0.05]",
+    "prepare_solution.T": "Temperature of mixing module (°C),  [constant]",
+    "coating_on_top.vel": "Speed of coating (mm/sec),  (0.5, 5.0]",
+    "coating_on_top.V": "Volume of solution (μL),  [constant]",
+    "coating_on_top.T": "Temperature of coating station (°C),  (60.0, 100.0]",
+    "annealing_coat.t": "Time of annealing (sec),  [constant]",
+    "annealing_coat.T": "Temperature of annealing station (°C),  [constant]",
+    "post_processing.sol": "Post-process solution vial number,  [1, 13]",
+    "post_processing.vel": "Speed of coating (mm/sec),  [0.5, 2.0]",
+    "post_processing.V": "Volume of solution (μL),  [constant]",
+    "post_processing.T": "Temperature of coating station (°C),  [25, 100]",
+    "annealing_post.t": "Time of annealing (sec),  [constant]",
+    "annealing_post.T": "Temperature of annealing station (°C),  [constant]"
+  },
+  "inputs_space": {
+    "prepare_solution.V_sol[0]": null,
+    "prepare_solution.V_sol[1]": [
+      0.0,
+      0.05,
+      0.01
+    ],
+    "prepare_solution.V_sol[2]": [
+      0.0,
+      0.05,
+      0.01
+    ],
+    "prepare_solution.T": null,
+    "coating_on_top.vel": [
+      0.5,
+      5.0,
+      0.5
+    ],
+    "coating_on_top.V": null,
+    "coating_on_top.T": [
+      60.0,
+      100.0,
+      5.0
+    ],
+    "annealing_coat.t": null,
+    "annealing_coat.T": null,
+    "post_processing.sol": [
+      1,
+      13,
+      1
+    ],
+    "post_processing.vel": [
+      0.5,
+      2.0,
+      0.5
+    ],
+    "post_processing.V": null,
+    "post_processing.T": [
+      25.0,
+      100.0,
+      5.0
+    ],
+    "annealing_post.t": null,
+    "annealing_post.T": null
+  }
+}
