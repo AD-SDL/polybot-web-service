@@ -29,10 +29,10 @@ def send_new_sample(sample: Sample):
         sample: Sample to be created on the Robot
     """
     # Send the request
-    logger.info(f'Sending sample {sample.id} to robot controller')
+    logger.info(f'Sending sample {sample.ID} to robot controller')
     res = requests.post(
         url=settings.robot_url + "upload/inputs.json",
-        files={"file": [f'{sample.id}.json', sample.json(), 'application/json']}
+        files={"file": [f'{sample.ID}.json', sample.json(), 'application/json']}
     )
 
     # Check if the result was

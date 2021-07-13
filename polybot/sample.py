@@ -22,15 +22,15 @@ def save_sample(sample: Sample, overwrite: bool = True):
         overwrite: Whether overwriting existing files
     """
 
-    path = settings.sample_folder / f"{sample.id}.json"
+    path = settings.sample_folder / f"{sample.ID}.json"
     if path.exists():
         if overwrite:
-            logger.warning(f'Overwriting file at {sample.id}')
+            logger.warning(f'Overwriting file at {sample.ID}')
         else:
             raise ValueError(f"File already exists. Set overwrite=True, if you want to remove it. Path: {path}")
     with open(path, 'w') as fp:
         fp.write(sample.json(indent=2))
-    logger.info(f'Wrote {sample.id} to {path}')
+    logger.info(f'Wrote {sample.ID} to {path}')
 
 
 def load_samples() -> Iterator[Sample]:

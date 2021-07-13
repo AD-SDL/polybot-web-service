@@ -23,7 +23,7 @@ def upload(args: Namespace):
 
     # Read in the file
     sample = Sample.parse_file(args.file)
-    logger.info(f'Read in sample {sample.id} from {args.file}')
+    logger.info(f'Read in sample {sample.ID} from {args.file}')
 
     # Make the upload package
     url = f'{args.url}/ingest'

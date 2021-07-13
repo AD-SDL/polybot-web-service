@@ -13,7 +13,7 @@ def sample_dir(tmpdir):
 
 def test_save(example_sample):
     save_sample(example_sample)
-    assert settings.sample_folder.joinpath(f'{example_sample.id}.json').is_file()
+    assert settings.sample_folder.joinpath(f'{example_sample.ID}.json').is_file()
     save_sample(example_sample, overwrite=True)
     with raises(ValueError):
         save_sample(example_sample, overwrite=False)
@@ -25,4 +25,4 @@ def test_load(example_sample):
         fp.write('Junk')
     samples = list(load_samples())
     assert len(samples) == 1
-    assert samples[0].id == example_sample.id
+    assert samples[0].ID == example_sample.ID

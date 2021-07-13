@@ -15,7 +15,7 @@ router = APIRouter(prefix='/ingest')
 @router.post("/")
 def upload_data(sample: Sample):
     """Intake a file from the robot and save it to disk"""
-    logger.info(f'Received sample {sample.id}')
+    logger.info(f'Received sample {sample.ID}')
 
     # Save it to disk
     save_sample(sample)
@@ -31,4 +31,4 @@ def upload_data(sample: Sample):
         )
         logger.info('Sent result to the planning service')
 
-    return {'success': True, 'sample': sample.id}
+    return {'success': True, 'sample': sample.ID}

@@ -7,7 +7,7 @@ def test_home(fastapi_client):
 
 
 def test_upload(fastapi_client):
-    res = fastapi_client.post('/ingest', json={'id': '1'*10}, allow_redirects=True)
+    res = fastapi_client.post('/ingest', json={'ID': '1'*10}, allow_redirects=True)
     assert res.status_code == 200
     reply = res.json()
     assert reply['success']

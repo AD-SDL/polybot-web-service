@@ -12,9 +12,10 @@ class Sample(BaseModel):
     """Description for a UVVis experiment"""
 
     # Sample identifiers
-    id: str = Field(default_factory=lambda: uuid4().hex[-10:],
+    ID: str = Field(default_factory=lambda: uuid4().hex[-10:],
                     description="Unique identifier for this sample used across robotic systems",
                     regex=r'[0-9a-f]{10}')
+    score: Optional[float] = Field(None, description='Priority for evaluating the sample. Higher will run sooner')
 
     # State information
     status: str = Field(None, description="Status of the sample")
@@ -31,7 +32,7 @@ class Sample(BaseModel):
     def reset_id(self):
         """Generate a new sample ID"""
         uuid = uuid4()
-        self.id = uuid.hex[-10:]
+        self.ID = uuid.hex[-10:]
 
     class Config:
         extra = 'allow'
@@ -44,7 +45,7 @@ class SampleTemplate(Sample):
     A superset of the information held by a :class:`Sample` object.
     """
 
-    id: Optional[str] = None
+    ID: Optional[str] = None
 
     _inputs_info: Dict[str, str] = Field(default_factory=dict, help='Human-readable descriptions of each parameter')
 
@@ -68,7 +69,7 @@ class SampleTemplate(Sample):
         Returns:
             A new sample instance
         """
-        return Sample(**self.dict(exclude={'_inputs_info', 'inputs_space', 'id'}))
+        return Sample(**self.dict(exclude={'_inputs_info', 'inputs_space', 'ID'}))
 
     def generate_search_space(self) -> Iterable[Dict[str, Any]]:
         """Generate the inputs for all possible values of the new samples
