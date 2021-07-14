@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from pathlib import Path
 from typing import Tuple
@@ -146,6 +145,11 @@ class BOPlanner(BasePlanner):
         # Create an initial RBF kernel, using the training set mean as a scaling parameter
         kernel = train_y.mean() ** 2 * kernels.RBF(length_scale=1)
 
+        # TODO (wardlt): Make it clear where featurization would appear, as we are soon to introduce additives
+        #  This will yield chemical degrees of freedom better captured using features of the additives rather
+        #  than a new variable per additive
+        #  Notes for now: Mol. Weight, Side Chain Length, and ... are the likely candidates
+
         # Add a noise parameter based on user settings
         noise = self.opt_spec.planner_options.get('noise_level', 0)
         self.logger.debug(f'Using a noise level of {noise}')
@@ -163,7 +167,7 @@ class BOPlanner(BasePlanner):
             kernel = kernel + kernels.WhiteKernel(noise ** 2, noise_level_bounds=(noise ** 2,) * 2)
 
         # Train a GPR model
-        self.logger.debug(f'Starting kernel')
+        self.logger.debug('Starting kernel')
         model = Pipeline([
             ('variance', VarianceThreshold()),
             ('scale', StandardScaler()),
@@ -179,7 +183,7 @@ class BOPlanner(BasePlanner):
             self.logger.info('Performed cross-validation.'
                              f' RMSE: {np.sqrt(-1 * np.mean(cv_results["train_score"])):.2e}')
         else:
-            self.logger.info(f'Insufficient data for cross-validation')
+            self.logger.info('Insufficient data for cross-validation')
 
         # Train and save the model
         model.fit(train_x, train_y)
