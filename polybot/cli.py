@@ -66,7 +66,7 @@ def launch_planner(args: Namespace):
         task_server = build_fn(settings.make_server_queue())
 
         if is_windows:
-            logger.info(f'Sharing a thread with the task server on Windows')
+            logger.info('Sharing a thread with the task server on Windows')
             server_thread = Thread(target=task_server.run, daemon=True)
             server_thread.start()
         else:
