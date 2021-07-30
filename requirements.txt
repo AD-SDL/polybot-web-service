@@ -10,3 +10,4 @@ pyyaml>=5.4.1
 numpy>=1.20.2
 setuptools>=52.0.0
 scikit-learn>=0.24.2
+modal>=0.4
