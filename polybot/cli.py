@@ -1,9 +1,11 @@
 """Command line interface for polybot"""
-import sys
 import re
+import sys
 import logging
 import importlib
+from platform import system
 from argparse import ArgumentParser, Namespace
+from threading import Thread
 from typing import Optional
 
 import yaml
@@ -58,10 +60,17 @@ def launch_planner(args: Namespace):
 
     # Build and launch the Colmena task server, if desired
     task_server: Optional[BaseTaskServer] = None
+    is_windows = system() == 'Windows'
     if args.task_server is not None:
         build_fn = _load_object(args.task_server)
         task_server = build_fn(settings.make_server_queue())
-        task_server.start()
+
+        if is_windows:
+            logger.info(f'Sharing a thread with the task server on Windows')
+            server_thread = Thread(target=task_server.run, daemon=True)
+            server_thread.start()
+        else:
+            task_server.start()
 
     # Start the planner process
     client_q = settings.make_client_queue()
@@ -73,7 +82,7 @@ def launch_planner(args: Namespace):
         planner.join(timeout=args.timeout)
     finally:
         planner.done.set()  # Tells the planner to shutdown
-        if task_server is not None:
+        if task_server is not None and not is_windows:
             task_server.kill()
 
 
