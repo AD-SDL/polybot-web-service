@@ -31,13 +31,15 @@ def send_new_sample(sample: Sample):
     # Send the request
     logger.info(f'Sending sample {sample.ID} to robot controller')
     res = requests.post(
-        url=settings.robot_url + "upload/inputs.json",
+        url=settings.robot_url + "/inputs/template",
         files={"file": [f'{sample.ID}.json', sample.json(), 'application/json']}
     )
 
-    # Check if the result was
+    # Check if the result was received correctly
+    # TODO (wardlt): Does the system restore its own sample
     if res.status_code != 200:
         raise ValueError(f'Failure to send new sample. Error: {res.text}')
     out = res.json()
     if out['status'] != 'success':
         raise ValueError(f'Failure to send new sample. Error: {out.get("error")}')
+    return sample.ID
