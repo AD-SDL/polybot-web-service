@@ -8,3 +8,5 @@ For now, we implement a local version (see [`local_compute.py`](./local_compute.
 complete very quickly (~10s for 3 million inference tasks).
 
 Launch using `polybot planner -p planner:BOPlanner -t local_compute:make_task_server opt_spec.yaml`.
+
+We recommend also launching the FastAPI services from this folder as well so that it uses the same environment variables.
