@@ -41,7 +41,11 @@ An "optimization specification" JSON file (note `opt_spec.json` above) provides 
 The specification includes the names of input variables and a path to a template workflow.
 The `OptimizationProblem` specification in [`polybot/planning.py`](./polybot/planning.py) includes the full details.
 
-### Designing Planning Algorithms
+## Example Planning Agents
+
+The [example-planners](./example-planners) directory includes a few different planning algorithms used by the PolyBot project.+
+
+## Designing Planning Algorithms
 
 The default AI planning algorithm randomly selects a new experiment from the search space once a previous experiment completes,
 but there is significant flexibility to write more complex algorithms.
