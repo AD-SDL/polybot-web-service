@@ -8,7 +8,7 @@ import sys
 import numpy as np
 from colmena.models import Result
 from colmena.redis.queue import ClientQueues
-from colmena.thinker import result_processor
+from colmena.thinker import result_processor, agent
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -67,8 +67,18 @@ class BOPlanner(BasePlanner):
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                             level=logging.DEBUG, handlers=handlers)
 
+    @agent(critical=False)
+    def startup(self):
+        """A thread that just performs a standard"""
+        if self.opt_spec.planner_options.get('cold_start', True):
+            self.logger.info('Performing a cold-start')
+            self.perform_bo()
+
     @result_processor(topic='robot')
     def robot_result_handler(self, _: Result):
+        self.perform_bo()
+
+    def perform_bo(self):
         # Make the output directory for results
         out_dir = self.output_dir / f'iteration-{self.iteration}'
         out_dir.mkdir()
@@ -117,7 +127,7 @@ class BOPlanner(BasePlanner):
             chunk_y, chunk_std = result.value
             search_y[chunk_start:(chunk_start + len(chunk_y))] = chunk_y
             search_std[chunk_start:(chunk_start + len(chunk_y))] = chunk_std
-            self.logger.info(f'Recorded inference task {i+1}/{n_chunks}. Starting point: {chunk_start}')
+            self.logger.info(f'Recorded inference task {i + 1}/{n_chunks}. Starting point: {chunk_start}')
 
         # Get the largest UCB
         assert self.opt_spec.maximize, "The optimization requests minimization"
@@ -129,10 +139,11 @@ class BOPlanner(BasePlanner):
         output = self.opt_spec.search_template.create_new_sample()
         for p, x in zip(self.opt_spec.search_template.input_columns, best_point):
             output.inputs[p] = x
-        self.logger.info('Sending a new sample to the robot')
-        send_new_sample(output)
+
         with out_dir.joinpath('selected_sample.json').open('w') as fp:
             print(output.json(indent=2), file=fp)
+        self.logger.info('Sending a new sample to the robot')
+        send_new_sample(output)
 
     def _fit_model(self, train_x: np.ndarray, train_y: np.ndarray, out_dir: Path) -> Pipeline:
         """Fit and test a model using the latest data
