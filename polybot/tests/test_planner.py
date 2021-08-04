@@ -7,6 +7,7 @@ from colmena.models import Result
 from pytest import fixture
 from pytest_mock import MockerFixture
 
+from polybot.models import SampleTemplate
 from polybot.planning import OptimizationProblem, RandomPlanner
 from polybot.config import settings
 
@@ -30,7 +31,7 @@ def test_get_sample_from_url(mocker: MockerFixture):
 
     mocker.patch('polybot.planning.requests.get', new=lambda x: _FakeResult())
     opt = OptimizationProblem(search_template_path='http://fake.com/path', output='fake')
-    assert isinstance(opt.search_template, OptimizationProblem)
+    assert isinstance(opt.search_template, SampleTemplate)
 
 
 def test_generate(mocker: MockerFixture, opt_config, fastapi_client, example_sample, caplog):
