@@ -1,4 +1,5 @@
 """Make sure the planning system works"""
+import json
 import logging
 from time import sleep
 
@@ -19,6 +20,17 @@ def opt_config() -> OptimizationProblem:
         search_template_path=file_path / "example-template.json",
         output='processed_outputs.conductivity'
     )
+
+
+def test_get_sample_from_url(mocker: MockerFixture):
+    class _FakeResult:
+        def json(self):
+            with open(file_path / "example-template.json") as fp:
+                return json.load(fp)
+
+    mocker.patch('polybot.planning.requests.get', new=lambda x: _FakeResult())
+    opt = OptimizationProblem(search_template_path='http://fake.com/path', output='fake')
+    assert isinstance(opt.search_template, OptimizationProblem)
 
 
 def test_generate(mocker: MockerFixture, opt_config, fastapi_client, example_sample, caplog):
