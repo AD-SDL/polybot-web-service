@@ -2,9 +2,7 @@ from pathlib import Path
 from shutil import rmtree
 
 from pytest import fixture
-from fastapi.testclient import TestClient
 
-from polybot.fastapi import app
 from polybot.models import Sample, SampleTemplate
 from polybot.config import settings
 
@@ -34,8 +32,3 @@ def example_sample() -> Sample:
 @fixture()
 def example_template() -> SampleTemplate:
     return SampleTemplate.parse_file(file_path / 'example-template.json')
-
-
-@fixture()
-def fastapi_client() -> TestClient:
-    return TestClient(app)

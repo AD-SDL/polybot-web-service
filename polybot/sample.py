@@ -9,28 +9,10 @@ from typing import Iterator
 
 from .config import settings
 from .models import Sample
+from adc import sample
 
 
 logger = logging.getLogger(__name__)
-
-
-def save_sample(sample: Sample, overwrite: bool = True):
-    """Save a sample
-
-    Args:
-        sample: Sample to be saved
-        overwrite: Whether overwriting existing files
-    """
-
-    path = settings.sample_folder / f"{sample.ID}.json"
-    if path.exists():
-        if overwrite:
-            logger.warning(f'Overwriting file at {sample.ID}')
-        else:
-            raise ValueError(f"File already exists. Set overwrite=True, if you want to remove it. Path: {path}")
-    with open(path, 'w') as fp:
-        fp.write(sample.json(indent=2))
-    logger.info(f'Wrote {sample.ID} to {path}')
 
 
 def load_samples() -> Iterator[Sample]:
@@ -40,6 +22,7 @@ def load_samples() -> Iterator[Sample]:
         Samples in no prescribed order
     """
 
+    sample()
     for path in settings.sample_folder.glob("*.json"):
         try:
             yield Sample.parse_file(path)

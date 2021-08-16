@@ -1,7 +1,5 @@
-pytest>=5.2
+pytest>=6.2.4
 pytest-cov
 pytest-mock
 scikit-learn
-uvicorn[standard]
-python-multipart
 flake8

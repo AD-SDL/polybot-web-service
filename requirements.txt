@@ -2,9 +2,7 @@ matplotlib>3
 pandas>=1
 pydantic>=1.5
 requests>=2.24
-fastapi>=0.65.2
 colmena>=0.1.0
-pytest>=6.2.4
 polybot>=0.0.1
 pyyaml>=5.4.1
 numpy>=1.20.2
