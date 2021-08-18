@@ -11,7 +11,7 @@ from colmena.redis.queue import ClientQueues
 from colmena.thinker import result_processor, agent
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.gaussian_process import GaussianProcessRegressor, kernels
 from sklearn.model_selection import RepeatedKFold, cross_validate
 from modAL.acquisition import EI
@@ -91,7 +91,8 @@ class BOPlanner(BasePlanner):
         self.logger.info(f'Loaded a training set of {len(train_x)} entries')
 
         # Log-normalize conductivity
-        train_y = np.log(train_y)
+        if self.opt_spec.planner_options.get('log_normalize', False):
+            train_y = np.log(train_y)
 
         # Fit a model and save the training records
         model = self._fit_model(train_x, train_y, out_dir)
@@ -153,6 +154,10 @@ class BOPlanner(BasePlanner):
             train_y: Output column
             out_dir: Location to store the data
         """
+        # Min-max scaling
+        scale_factor = (train_y.max() - train_y.min())
+        train_y = (train_y - train_y.min()) / scale_factor
+
         # Create an initial RBF kernel, using the training set mean as a scaling parameter
         kernel = train_y.mean() ** 2 * kernels.RBF(length_scale=1)
 
@@ -185,14 +190,19 @@ class BOPlanner(BasePlanner):
             ('gpr', GaussianProcessRegressor(kernel))
         ])
 
-        # Perform k-Fold cross-validation to estimate model performance
+        # Perform k-Fold cross-validation to estimate model performance 
         if len(train_x) > 5:
             cv_results = cross_validate(model, train_x, train_y, cv=RepeatedKFold(), return_train_score=True,
                                         scoring='neg_mean_squared_error')
             with out_dir.joinpath('cross-val-results.pkl').open('wb') as fp:
                 pkl.dump(cv_results, fp)
-            self.logger.info('Performed cross-validation.'
-                             f' RMSE: {np.sqrt(-1 * np.mean(cv_results["train_score"])):.2e}')
+
+            # Get the RMSE in the unscaled units
+            rmse = np.sqrt(-1 * np.mean(cv_results["test_score"]))
+            rmse *= scale_factor
+
+            # Print out to screen
+            self.logger.info(f'Performed cross-validation. RMSE: {rmse:.2e}')
         else:
             self.logger.info('Insufficient data for cross-validation')
 

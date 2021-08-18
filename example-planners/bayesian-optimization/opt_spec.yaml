@@ -4,3 +4,4 @@ planner_options:
   beta: 1  # Balancing exploration and exploitation
   chunk_size: 500000  # Size of inference. Lower for better parallelism, reducing memory usage
   noise_level: 0.5  # Assumed level of the noise. Set to <0 to guess, 0 to turn off noise, and >0 to specify a value
+  log_normalize: false  # Whether to log-normalize conductivity before fitting
