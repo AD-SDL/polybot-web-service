@@ -87,7 +87,7 @@ class BOPlanner(BasePlanner):
         self.iteration += 1
 
         # Get the training data
-        train_x, train_y = self.generate_training_set()
+        train_x, train_y, failed_x = self.generate_training_set()
         self.logger.info(f'Loaded a training set of {len(train_x)} entries')
 
         # Log-normalize conductivity
@@ -204,14 +204,15 @@ class BOPlanner(BasePlanner):
             pkl.dump(model, fp)
         return model
 
-    def generate_training_set(self) -> Tuple[np.ndarray, np.ndarray]:
+    def generate_training_set(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Load in all of the previous samples to build a training set
 
         Uses the inputs and outputs defined in the optimization specification
 
         Returns:
-            - Input features
-            - Output variable
+            - Input features for training set
+            - Output variable for training set
+            - Input features for failed samples
         """
 
         # Get the name of the input columns
@@ -219,10 +220,16 @@ class BOPlanner(BasePlanner):
 
         train_x = []
         train_y = []
+        failed_x = []
         # Loop over samples in the training data
         for sample in load_samples():
-            train_x.append([sample.inputs[i] for i in input_columns])  # Get only the needed input columns
-            train_y.append(sample.processed_output[self.opt_spec.output])  # Get the target output column
+            if sample.processed_output['sample_quality']['defective'] \
+                    and sample.raw_output['thickness_data']['goodness of fitting'] > 0.9 \
+                    and self.opt_spec.output in sample.processed_output:
+                failed_x.append([sample.inputs[i] for i in input_columns])  # Store coordinates of bad samples
+            else:
+                train_x.append([sample.inputs[i] for i in input_columns])  # Get only the needed input columns
+                train_y.append(sample.processed_output[self.opt_spec.output])  # Get the target output column
 
         # Convert them to numpy and return
-        return np.array(train_x), np.array(train_y)
+        return np.array(train_x), np.array(train_y), np.array(failed_x)
