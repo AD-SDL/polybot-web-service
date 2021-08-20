@@ -11,7 +11,7 @@ from colmena.redis.queue import ClientQueues
 from colmena.thinker import result_processor, agent
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.gaussian_process import GaussianProcessRegressor, kernels
 from sklearn.model_selection import RepeatedKFold, cross_validate
 from modAL.acquisition import EI
@@ -190,7 +190,7 @@ class BOPlanner(BasePlanner):
             ('gpr', GaussianProcessRegressor(kernel))
         ])
 
-        # Perform k-Fold cross-validation to estimate model performance 
+        # Perform k-Fold cross-validation to estimate model performance
         if len(train_x) > 5:
             cv_results = cross_validate(model, train_x, train_y, cv=RepeatedKFold(), return_train_score=True,
                                         scoring='neg_mean_squared_error')
