@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional, Tuple, List
 from urllib.parse import urlparse
 
+from adc.client import ADCClient
 from colmena.redis.queue import ClientQueues, TaskServerQueues
 from pydantic import BaseSettings, Field, HttpUrl, RedisDsn
 
@@ -12,8 +13,9 @@ _run_folder = Path.cwd()
 class Settings(BaseSettings):
     """Settings for the web service"""
 
-    # Sample handling
-    sample_folder: Path = Field(_run_folder / "samples", description="Path in which to store the samples")
+    # Configuration related to data storage on the Argonne Data Cloud
+    adc_access_token: Optional[str] = Field(None, description='Token for accessing the Argonne Data Cloud')
+    adc_study_id: Optional[str] = Field(None, description='Study ID associated with this experiment')
 
     # Logging
     log_name: Optional[str] = Field(None, description="Name of the log file. If not provided, logs will not be stored")
@@ -65,6 +67,14 @@ class Settings(BaseSettings):
         """
         hostname, port = self.redis_info
         return TaskServerQueues(hostname, port, name='polybot', topics=['robot'] + self.task_queues)
+
+    def generate_adc_client(self) -> ADCClient:
+        """Create an authenticated ADC client
+
+        Returns:
+            A client to the ADC that is ready to make queries
+        """
+        return ADCClient(self.adc_access_token)
 
 
 settings = Settings()

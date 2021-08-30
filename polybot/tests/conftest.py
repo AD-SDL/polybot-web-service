@@ -13,13 +13,6 @@ _test_dir = Path(__file__).parent
 
 @fixture(autouse=True)
 def test_settings():
-    # Redirect the sample folder
-    sample_dir = _test_dir / "test-samples"
-    if sample_dir.is_dir():
-        rmtree(sample_dir)
-    sample_dir.mkdir()
-    settings.sample_folder = sample_dir
-
     # Set up the test Redis service
     settings.redis_url = "rediss://localhost"
 

@@ -1,10 +1,32 @@
 from polybot.sample import load_samples
-from polybot.config import settings
+
+example_output = {
+    "study": {
+        "id": "U3R1ZHlOb2RlOjU=",
+        "name": "polybot-ai-test",
+        "description": "Test study for developing the Polybot AI planning service.",
+        "keywords": [],
+        "startDate": None,
+        "status": "NEW",
+        "created": "2021-08-30T16:54:41.706854+00:00",
+        "updated": "2021-08-30T16:54:42.127315+00:00",
+        "permissions": [
+            {
+                "user": {
+                    "id": "VXNlck5vZGU6NQ==",
+                    "name": "",
+                    "email": "loganw@uchicago.edu"
+                },
+                "level": "ADMIN"
+            }
+        ],
+        "investigations": [],
+        "samples": []
+    }
+}
 
 
 def test_load(example_sample):
-    with open(settings.sample_folder / "test.json", 'w') as fp:
-        fp.write('Junk')
     samples = list(load_samples())
     assert len(samples) == 1
     assert samples[0].ID == example_sample.ID

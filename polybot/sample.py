@@ -9,7 +9,6 @@ from typing import Iterator
 
 from .config import settings
 from .models import Sample
-from adc import sample
 
 
 logger = logging.getLogger(__name__)
@@ -22,8 +21,13 @@ def load_samples() -> Iterator[Sample]:
         Samples in no prescribed order
     """
 
-    sample()
-    for path in settings.sample_folder.glob("*.json"):
+    # Query to get the list of samples in the study
+    adc_client = settings.generate_adc_client()
+    if settings.adc_study_id is None:
+        raise ValueError('The ADC study id is not set. Set your ADC_STUDY_ID environment variable.')
+    study_info = adc_client.get_study(settings.adc_study_id)
+
+    for path in study_info['study']['samples']:
         try:
             yield Sample.parse_file(path)
         except BaseException:
