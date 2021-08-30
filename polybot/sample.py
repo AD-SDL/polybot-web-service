@@ -6,6 +6,7 @@ We will work with the "data infrastructure" team to figure out something better.
 
 import logging
 from typing import Iterator
+from requests import get
 
 from .config import settings
 from .models import Sample
@@ -27,8 +28,13 @@ def load_samples() -> Iterator[Sample]:
         raise ValueError('The ADC study id is not set. Set your ADC_STUDY_ID environment variable.')
     study_info = adc_client.get_study(settings.adc_study_id)
 
-    for path in study_info['study']['samples']:
+    for sample in study_info['study']['samples']:
+        # Pull down the JSON associated with each sample
+        json_url = sample['url']
+        sample_data = get(json_url, verify=False).json()
+
+        # Yield the result a Sample object
         try:
-            yield Sample.parse_file(path)
-        except BaseException:
-            continue
+            yield Sample.parse_obj(sample_data)
+        except Exception:
+            logger.warning(f'Failed to parse Sample ID {sample["id"]}')
