@@ -10,11 +10,11 @@ from typing import Dict, Callable, Union
 import requests
 from colmena.redis.queue import ClientQueues, TaskServerQueues
 from colmena.task_server import ParslTaskServer
-from colmena.thinker import BaseThinker, result_processor
-from colmena.models import Result
+from colmena.thinker import BaseThinker, agent
 from parsl import Config, ThreadPoolExecutor
 from pydantic import BaseModel, Field, AnyHttpUrl
 
+from polybot.sample import subscribe_to_study
 from polybot.models import SampleTemplate
 from polybot.robot import send_new_sample
 
@@ -60,12 +60,14 @@ class BasePlanner(BaseThinker):
     :class:`OptimizationProblem` JSON document.
 
     There are no requirements on how you implement the planning algorithm, but you may at least want an agent
-    waiting for results with the "robot" topic. For example,
+    that subscribes to results from the Argonne Data Cloud "subscribe_to_samples" feed.
 
     .. code: python
 
-        @result_processor(topic='robot')
-        def robot_result_handler(self, _: Result):
+        @agent()
+        def robot_planner(self, _: Result):
+            from polybot.
+            for _ in
             output = self.opt_spec.get_sample_template()
             send_send_new_sample(output)
 
@@ -79,21 +81,20 @@ class BasePlanner(BaseThinker):
 class RandomPlanner(BasePlanner):
     """Submit a randomly-selected point from the search space each time a new result is completed"""
 
-    @result_processor(topic='robot')
-    def robot_result_handler(self, _: Result):
-        """Generate a new task to be run on the robot after one completes
+    @agent()
+    def robot_result_handler(self):
+        """Generate a new task to be run on the robot after one completes"""
+        # Wait a result to complete
+        for sample in subscribe_to_study():
+            self.logger.info(f'Received new sample: {sample.ID}')
 
-        Args:
-            _: Result that is not actually used for now.
-        """
-        # Make a choice for each variable
-        output = self.opt_spec.search_template.create_new_sample()
-        for key, acceptable_values in self.opt_spec.search_template.list_acceptable_input_values().items():
-            output.inputs[key] = random.choice(acceptable_values)
+            # Make a choice for each variable
+            output = self.opt_spec.search_template.create_new_sample()
+            for key, acceptable_values in self.opt_spec.search_template.list_acceptable_input_values().items():
+                output.inputs[key] = random.choice(acceptable_values)
 
-        # Send it to the robot
-        send_new_sample(output)
-        return
+            # Send it to the robot
+            send_new_sample(output)
 
 
 def _execute(f: Callable):
