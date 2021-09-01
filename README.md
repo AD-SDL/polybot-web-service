@@ -23,7 +23,6 @@ which you can use to build the environment using `pip`:
 The web service is built from three smaller services.
 
 - Redis: Launch Redis as normal: `redis-server`
-- Web Service: Launch FastAPI using Uvicorn: `uvicorn polybot.fastapi:app`
 - AI planner: Launch using the CLI: `polybot planner opt_spec.json`
 
 ### Configuring PolyBot
@@ -57,19 +56,39 @@ polybot planner --planning-class planner:BOPlanner
 ```
 
 Polybot uses [Colmena](http://colmena.rtfd.org/) to express planning algorithms.
-At minimum, you will need to implement a ["Thinker"](https://colmena.readthedocs.io/en/latest/how-to.html#creating-a-thinker-application)
-that defines the logic for controlling the robot. 
+Follow our guide to creating a ["Thinker"](https://colmena.readthedocs.io/en/latest/how-to.html#creating-a-thinker-application)
+to defines the logic for controlling the robot.
+`BasePlanner` is a subclass of the Colmena `BaseThinker` class.
 We briefly describe a few common tasks and how to implement them.
 
 #### Responding to Data from Robot
 
-The web service provides result events with the topic "robot," and you must
-define logic for how to respond to new data becoming available.
-We recommend either explicitly waiting on the results from this topic using the 
-[`self.queue.get_result`](https://colmena.readthedocs.io/en/latest/how-to.html#submitting-tasks) function
-or using the [`@result_processor(topic='robot')`](https://colmena.readthedocs.io/en/latest/thinker.html#result-processing-agents)
-decorate.
-Typically, the function will end by sending a new task to the robot using the 
+We access results from the robot by subscribing "study events" from the Argonne Data Cloud (ADC).
+The ADC provides a service where one can be sent messages about when a sample is created via web sockets.
+Use this feature by first setting the ID for your study as the `ADC_STUDY_ID` environment variable and
+then using the `subscribe_to_study` function provided with this library.
+
+A template "Thinker" application that uses these functions would be
+
+```python
+from colmena.thinker import agent
+
+from polybot.planning import BasePlanner
+from polybot.sample import subscribe_to_study
+from polybot.robot import send_new_sample
+
+class RobotPlanner(BasePlanner):
+
+    @agent()
+    def make_tasks(self):
+        """This function will run as a thread when you start the planner"""
+        for sample in subscribe_to_study():
+            new_sample = ...  # Logic to be defined by you!
+            send_new_sample(new_sample)
+```
+
+Note how we receive a new sample from the [`subscribe_to_study`](./polybot/sample.py) function
+and then send a new task to the robot using the 
 [`polybot.robot.send_new_sample`](./polybot/robot.py) function.
 
 #### Performing Computations on Remote Resources
