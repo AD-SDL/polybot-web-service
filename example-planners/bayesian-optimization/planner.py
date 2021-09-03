@@ -8,7 +8,7 @@ import sys
 import numpy as np
 from colmena.models import Result
 from colmena.redis.queue import ClientQueues
-from colmena.thinker import result_processor, agent
+from colmena.thinker import agent
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -16,8 +16,9 @@ from sklearn.gaussian_process import GaussianProcessRegressor, kernels
 from sklearn.model_selection import RepeatedKFold, cross_validate
 from modAL.acquisition import EI
 
+from polybot.config import settings
 from polybot.robot import send_new_sample
-from polybot.sample import load_samples
+from polybot.sample import load_samples, subscribe_to_study
 from polybot.planning import BasePlanner, OptimizationProblem
 
 
@@ -74,9 +75,10 @@ class BOPlanner(BasePlanner):
             self.logger.info('Performing a cold-start')
             self.perform_bo()
 
-    @result_processor(topic='robot')
-    def robot_result_handler(self, _: Result):
-        self.perform_bo()
+    @agent()
+    def robot_result_handler(self):
+        for sample in subscribe_to_study():
+            self.perform_bo()
 
     def perform_bo(self):
         # Make the output directory for results
