@@ -18,6 +18,9 @@ which you can use to build the environment using `pip`:
 
 `pip install -e .`
 
+There is one exception: The Argonne Data Cloud SDK is not yet installable via Pip. 
+You must clone it from https://github.com/AD-SDL/adc-rdm-sdk/ (private repo) then install the package with [Poetry](https://python-poetry.org/).
+
 ## Running Polybot
 
 The web service is built from three smaller services.

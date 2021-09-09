@@ -10,6 +10,7 @@ dependencies:
   - scikit-learn
   - pandas==1.*
   - pydantic
+  - tqdm
   - pytest
   - pytest-cov
   - flake8
