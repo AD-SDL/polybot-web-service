@@ -3,7 +3,7 @@
 [![Python package](https://github.com/AD-SDL/polybot-web-service/actions/workflows/python-package.yml/badge.svg)](https://github.com/AD-SDL/polybot-web-service/actions/workflows/python-package.yml)
 [![Coverage Status](https://coveralls.io/repos/github/AD-SDL/polybot-web-service/badge.svg?branch=master)](https://coveralls.io/github/AD-SDL/polybot-web-service?branch=master)
 
-A server for controlling the robot synthesis of thin-film polymeric materials.
+A server for planning what experiments are performed the robot synthesis of thin-film polymeric materials.
 
 ## Installation
 
@@ -18,12 +18,13 @@ which you can use to build the environment using `pip`:
 
 `pip install -e .`
 
-There is one exception: The Argonne Data Cloud SDK is not yet installable via Pip. 
-You must clone it from https://github.com/AD-SDL/adc-rdm-sdk/ (private repo) then install the package with [Poetry](https://python-poetry.org/).
+Once installed, you may need to create an account with the [Argonne Discovery Cloud (ADC)](https://stage.discoverycloud.anl.gov/)
+and use the login token to authenticate with the web service.
+See the ADC SDK for [more details](https://github.com/AD-SDL/adc-rdm-sdk).
 
 ## Running Polybot
 
-The web service is built from three smaller services.
+The web service is built from two smaller services.
 
 - Redis: Launch Redis as normal: `redis-server`
 - AI planner: Launch using the CLI: `polybot planner opt_spec.json`
@@ -36,6 +37,7 @@ Key variables include:
 - `ROBOT_URL`: URL of the Robot Scheduler
 - `REDIS_URL`: URL of the Redis queue
 - `LOG_NAME`: Name of the log file
+- `ADC_STUDY_ID`: Study ID associated with this experiment on the Argonne Discovery Cloud
 
 Full options are in [`polybot/config.py`](./polybot/config.py).
 
