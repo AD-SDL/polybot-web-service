@@ -1,28 +1,16 @@
 from pathlib import Path
 
-from pytest import fixture, raises
+from polybot.models import Sample
+from polybot.sample import load_samples, subscribe_to_study
 
-from polybot.sample import save_sample, load_samples
-from polybot.config import settings
-
-
-@fixture(autouse=True)
-def sample_dir(tmpdir):
-    settings.sample_folder = Path(tmpdir)
+_my_path = Path(__file__).parent
 
 
-def test_save(example_sample):
-    save_sample(example_sample)
-    assert settings.sample_folder.joinpath(f'{example_sample.ID}.json').is_file()
-    save_sample(example_sample, overwrite=True)
-    with raises(ValueError):
-        save_sample(example_sample, overwrite=False)
+def test_subscribe(mock_subscribe):
+    sample = next(subscribe_to_study())
+    assert isinstance(sample, Sample)
 
 
 def test_load(example_sample):
-    test_save(example_sample)
-    with open(settings.sample_folder / "test.json", 'w') as fp:
-        fp.write('Junk')
     samples = list(load_samples())
-    assert len(samples) == 1
-    assert samples[0].ID == example_sample.ID
+    assert len(samples) >= 1
