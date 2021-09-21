@@ -60,13 +60,13 @@ def launch_planner(args: Namespace):
 
     # Build and launch the Colmena task server, if desired
     task_server: Optional[BaseTaskServer] = None
-    is_windows = system() == 'Windows'
+    is_linux = system() == 'Linux'
     if args.task_server is not None:
         build_fn = _load_object(args.task_server)
         task_server = build_fn(settings.make_server_queue())
 
-        if is_windows:
-            logger.info('Sharing a thread with the task server on Windows')
+        if not is_linux:
+            logger.info('Sharing a thread with the task server, as we are not on Linux')
             server_thread = Thread(target=task_server.run, daemon=True)
             server_thread.start()
         else:
@@ -82,7 +82,7 @@ def launch_planner(args: Namespace):
         planner.join(timeout=args.timeout)
     finally:
         planner.done.set()  # Tells the planner to shutdown
-        if task_server is not None and not is_windows:
+        if task_server is not None and is_linux:
             task_server.kill()
 
 
