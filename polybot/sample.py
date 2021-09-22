@@ -29,14 +29,7 @@ def subscribe_to_study() -> Iterator[Sample]:
         raise ValueError('The ADC study id is not set. Set your ADC_STUDY_ID environment variable.')
 
     for event in adc_client.subscribe_to_study(settings.adc_study_id):
-        # Check that we have the right type of event
-        if "newSample" not in event:
-            logger.debug('Event type was not "newSample"')
-            continue
-
-        # Get the sample information
-        sample = event["newSample"]["sample"]
-        yield _parse_sample(sample)
+        yield _parse_sample(event.sample)
 
 
 def load_samples() -> Iterator[Sample]:

@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 
+from adc_sdk.models import StudySubscriptionEvent
 from pytest import fixture
 from pytest_mock import MockerFixture
 
@@ -39,11 +40,10 @@ def example_sample() -> dict:
 
 @fixture()
 def mock_subscribe(example_sample, mocker: MockerFixture):
-    # Make a fake subscription response
-    ex_record = json.loads(file_path.joinpath('example-adc-subscription-event.json').read_text())
-    ex_record['newSample']['sample'] = example_sample  # Gives a sample with an active data URL
+    # Make a fake subscription response with a real sample
+    ex_record = json.loads(file_path.joinpath('example-adc-subscription-event.json').read_text())['study']
+    ex_record['sample'] = example_sample.dict()  # Gives a sample with an active data URL
+    event = StudySubscriptionEvent.parse_event(ex_record)
 
     # Mock the event generator
-    def _fake_subscribe(*args, **kwargs):
-        yield ex_record
-    mocker.patch('polybot.config.ADCClient.subscribe_to_study', new=_fake_subscribe)
+    mocker.patch('polybot.config.ADCClient.subscribe_to_study', return_value=iter([event]))
