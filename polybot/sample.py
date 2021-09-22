@@ -6,7 +6,8 @@ We will work with the "data infrastructure" team to figure out something better.
 
 import logging
 from typing import Iterator
-from requests import get
+
+from adc_sdk.models import Sample as ADCSample
 
 from .config import settings
 from .models import Sample
@@ -49,23 +50,22 @@ def load_samples() -> Iterator[Sample]:
     adc_client = settings.generate_adc_client()
     if settings.adc_study_id is None:
         raise ValueError('The ADC study id is not set. Set your ADC_STUDY_ID environment variable.')
-    study_info = adc_client.get_study(settings.adc_study_id)
+    study = adc_client.get_study(settings.adc_study_id)
 
-    for sample in study_info['study']['samples']:
+    for sample in study.samples:
         yield _parse_sample(sample)
 
 
-def _parse_sample(sample_record: dict) -> Sample:
+def _parse_sample(sample: ADCSample) -> Sample:
     """Create a Sample object given a sample record from ADC
 
     Args:
-        sample_record: Sample information record from ADC
+        sample: Sample information record from ADC
     Returns:
-        Sample object in the format used by `pol
+        Sample object in the format created by polybot
     """
     # Pull down the JSON associated with each sample
-    json_url = sample_record['url']
-    sample_data = get(json_url, verify=False).json()
+    sample_data = sample.get_file(verify=False)
 
     # Parse as a sample object
-    return Sample.parse_obj(sample_data)
+    return Sample.parse_raw(sample_data)

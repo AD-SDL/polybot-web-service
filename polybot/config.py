@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional, Tuple, List
 from urllib.parse import urlparse
 
-from adc.client import ADCClient
+from adc_sdk.client import ADCClient
 from colmena.redis.queue import ClientQueues, TaskServerQueues
 from pydantic import BaseSettings, Field, HttpUrl, RedisDsn
 

@@ -34,7 +34,7 @@ def example_sample() -> dict:
     client = settings.generate_adc_client()
     assert settings.adc_study_id is not None, "Missing ADC_STUDY_ID environmental variable"
     study_response = client.get_study(settings.adc_study_id)
-    return study_response['study']['samples'][0]
+    return study_response.samples[0]
 
 
 @fixture()
