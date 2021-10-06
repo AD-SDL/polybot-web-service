@@ -1,20 +1,13 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Tuple
-import pickle as pkl
 import logging
 import sys
 
 import numpy as np
-from colmena.models import Result
 from colmena.redis.queue import ClientQueues
 from colmena.thinker import agent
-from sklearn.feature_selection import VarianceThreshold
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.gaussian_process import GaussianProcessRegressor, kernels
-from sklearn.model_selection import RepeatedKFold, cross_validate
-from modAL.acquisition import EI
+from sklearn.gaussian_process import GaussianProcessRegressor
 
 from polybot.config import settings
 from polybot.robot import send_new_sample
@@ -73,175 +66,37 @@ class BOPlanner(BasePlanner):
         """A thread that just performs a standard"""
         if self.opt_spec.planner_options.get('cold_start', True):
             self.logger.info('Performing a cold-start')
-            self.perform_bo()
+            self.launch_flow()
 
     @agent()
     def robot_result_handler(self):
+        """Launches a new planning task whenever the robot finishes a simulation"""
         for sample in subscribe_to_study():
-            self.perform_bo()
+            self.launch_flow()
 
-    def perform_bo(self):
-        # Make the output directory for results
-        out_dir = self.output_dir / f'iteration-{self.iteration}'
-        out_dir.mkdir()
+    def launch_flow(self):
+        """Launch a Globus flow that will generate the next task"""
 
-        # Increment the iteration number
-        self.iteration += 1
+        # Get the inputs needed for the low
+        training_set = [x.json() for x in load_samples()]  # The training set for the algorithm, stored as JSON strings
+        self.logger.info(f'Gathered {len(training_set)} training examples')
+        run_configuration = self.opt_spec.planner_options.copy()  # Any configuration options for the task
 
-        # Get the training data
-        train_x, train_y, failed_x = self.generate_training_set()
-        self.logger.info(f'Loaded a training set of {len(train_x)} entries')
+        # Create a new job
+        client = settings.generate_adc_client()
+        # TODO (wardlt): Not sure what to use for sample and investigation IDs.
+        #  - Do we need a sample to start a Job?
+        #  - I can make an investigation and add it to the "settings" for the run
+        job_id = client.create_job('invest_id', 'sample_id', datetime.now())
+        self.logger.info(f'Created a job in the ADC: {job_id}')
 
-        # Log-normalize conductivity
-        if self.opt_spec.planner_options.get('log_normalize', False):
-            train_y = np.log(train_y)
+        # Call flow
+        #  flow_client.run_flow(inputs={'training_set': training_set, 'settings': run_configuration}) ...
+        self.logger.info('Submitted job to Globus Flows: {flow_id}')
 
-        # Fit a model and save the training records
-        model = self._fit_model(train_x, train_y, out_dir)
+        # Wait until the job finishes
+        for event in client.subscribe_to_job(job_id):
+            # Not sure what these events are
+            break
 
-        # Create the search space
-        possible_options = self.opt_spec.search_template.generate_search_space_dataframe()
-        search_x = possible_options[self.opt_spec.search_template.input_columns]
-        self.logger.info(f'Created {len(search_x)} samples to be evaluated')
-
-        # Send it to be evaluated remotely
-        chunk_size = self.opt_spec.planner_options.get('chunk_size')
-        chunk_start = 0
-        n_chunks = 0
-        for i, chunk in enumerate(np.array_split(search_x, len(search_x) // chunk_size)):
-            self.queues.send_inputs(model, chunk,
-                                    method='run_inference', topic='compute',  # Define what to run
-                                    task_info={'chunk_start': chunk_start},  # Maintain how to map to search space
-                                    keep_inputs=False)  # Optimization: Do not send search space or model back
-            chunk_start += len(chunk)
-            n_chunks += 1
-        self.logger.info(f'Sent all {n_chunks} inference tasks')
-
-        # Prepare to be able to store the data
-        search_y = np.empty((len(search_x),))
-        search_std = np.empty((len(search_y),))
-        for i in range(n_chunks):
-            result = self.queues.get_result(topic='compute')  # Get the result
-            if not result.success:
-                raise ValueError(f'Inference task failed.\n{result.task_info["exception"]}')
-
-            # Store the result
-            chunk_start = result.task_info['chunk_start']
-            chunk_y, chunk_std = result.value
-            search_y[chunk_start:(chunk_start + len(chunk_y))] = chunk_y
-            search_std[chunk_start:(chunk_start + len(chunk_y))] = chunk_std
-            self.logger.info(f'Recorded inference task {i + 1}/{n_chunks}. Starting point: {chunk_start}')
-
-        # Get the largest UCB
-        assert self.opt_spec.maximize, "The optimization requests minimization"
-        ei = EI(search_y, search_std, max_val=np.max(train_y), tradeoff=0.1)
-        best_ind = np.argmax(ei)
-        best_point = search_x.iloc[best_ind][self.opt_spec.search_template.input_columns]
-
-        # Make the sample and send it out
-        output = self.opt_spec.search_template.create_new_sample()
-        for p, x in zip(self.opt_spec.search_template.input_columns, best_point):
-            output.inputs[p] = x
-
-        with out_dir.joinpath('selected_sample.json').open('w') as fp:
-            print(output.json(indent=2), file=fp)
-        self.logger.info('Sending a new sample to the robot')
-        send_new_sample(output)
-
-    def _fit_model(self, train_x: np.ndarray, train_y: np.ndarray, out_dir: Path) -> Pipeline:
-        """Fit and test a model using the latest data
-
-        Args:
-            train_x: Input columns
-            train_y: Output column
-            out_dir: Location to store the data
-        """
-        # Min-max scaling
-        scale_factor = (train_y.max() - train_y.min())
-        train_y = (train_y - train_y.min()) / scale_factor
-
-        # Create an initial RBF kernel, using the training set mean as a scaling parameter
-        kernel = train_y.mean() ** 2 * kernels.RBF(length_scale=1)
-
-        # TODO (wardlt): Make it clear where featurization would appear, as we are soon to introduce additives
-        #  This will yield chemical degrees of freedom better captured using features of the additives rather
-        #  than a new variable per additive
-        #  Notes for now: Mol. Weight, Side Chain Length, and ... are the likely candidates
-
-        # Add a noise parameter based on user settings
-        noise = self.opt_spec.planner_options.get('noise_level', 0)
-        self.logger.debug(f'Using a noise level of {noise}')
-        if noise < 0:
-            # Use standard deviation of the distribution of train_y will be the estimation of initial noise
-            # TODO (wardlt): Document where 3, 4, and 11 come from
-            noise_estimated = np.std(train_y) / 3
-            noise_lb = noise_estimated / 4
-            noise_ub = noise_estimated * 11
-
-            kernel_noise = kernels.WhiteKernel(noise_level=noise_estimated ** 2,
-                                               noise_level_bounds=(noise_lb ** 2, noise_ub ** 2))
-            kernel = kernel + kernel_noise
-        elif noise > 0:
-            kernel = kernel + kernels.WhiteKernel(noise ** 2, noise_level_bounds=(noise ** 2,) * 2)
-
-        # Train a GPR model
-        self.logger.debug('Starting kernel')
-        model = Pipeline([
-            ('variance', VarianceThreshold()),
-            ('scale', StandardScaler()),
-            ('gpr', GaussianProcessRegressor(kernel))
-        ])
-
-        # Perform k-Fold cross-validation to estimate model performance
-        if len(train_x) > 5:
-            cv_results = cross_validate(model, train_x, train_y, cv=RepeatedKFold(), return_train_score=True,
-                                        scoring='neg_mean_squared_error')
-            with out_dir.joinpath('cross-val-results.pkl').open('wb') as fp:
-                pkl.dump(cv_results, fp)
-
-            # Get the RMSE in the unscaled units
-            rmse = np.sqrt(-1 * np.mean(cv_results["test_score"]))
-            rmse *= scale_factor
-
-            # Print out to screen
-            self.logger.info(f'Performed cross-validation. RMSE: {rmse:.2e}')
-        else:
-            self.logger.info('Insufficient data for cross-validation')
-
-        # Train and save the model
-        model.fit(train_x, train_y)
-        self.logger.info(f'Finished fitting the model on {len(train_x)} data points')
-        self.logger.info(f'Optimized model: {model["gpr"].kernel_}')
-        with out_dir.joinpath('model.pkl').open('wb') as fp:
-            pkl.dump(model, fp)
-        return model
-
-    def generate_training_set(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Load in all of the previous samples to build a training set
-
-        Uses the inputs and outputs defined in the optimization specification
-
-        Returns:
-            - Input features for training set
-            - Output variable for training set
-            - Input features for failed samples
-        """
-
-        # Get the name of the input columns
-        input_columns = self.opt_spec.search_template.input_columns
-
-        train_x = []
-        train_y = []
-        failed_x = []
-        # Loop over samples in the training data
-        for sample in load_samples():
-            if sample.processed_output['sample_quality']['defective'] \
-                    and sample.raw_output['thickness_data']['goodness of fitting'] > 0.9 \
-                    and self.opt_spec.output in sample.processed_output:
-                failed_x.append([sample.inputs[i] for i in input_columns])  # Store coordinates of bad samples
-            else:
-                train_x.append([sample.inputs[i] for i in input_columns])  # Get only the needed input columns
-                train_y.append(sample.processed_output[self.opt_spec.output])  # Get the target output column
-
-        # Convert them to numpy and return
-        return np.array(train_x), np.array(train_y), np.array(failed_x)
+        send_new_sample(None)  # TODO (wardlt): Unpack the sample from the output of the job
