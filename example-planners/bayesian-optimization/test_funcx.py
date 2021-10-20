@@ -13,8 +13,9 @@ import numpy as np
 import yaml
 
 from planner import run_inference
-from polybot.models import Sample
 from polybot.planning import OptimizationProblem
+from polybot.config import settings
+from polybot.sample import load_samples
 
 
 def fit_model(opt_spec: OptimizationProblem, train_x: np.ndarray, train_y: np.ndarray) -> Pipeline:
@@ -79,8 +80,7 @@ def generate_training_set(opt_spec: OptimizationProblem, sample_path) -> Tuple[n
     train_x = []
     train_y = []
     # Loop over samples in the training data
-    for path in Path(sample_path).rglob('*.json'):
-        sample = Sample.parse_file(path)
+    for sample in load_samples():
         train_x.append([sample.inputs[c] for c in input_columns])  # Get only the needed input columns
         train_y.append(sample.processed_output[opt_spec.output])  # Get the target output column
 
@@ -91,11 +91,13 @@ def generate_training_set(opt_spec: OptimizationProblem, sample_path) -> Tuple[n
 if __name__ == "__main__":
     # Make some CLI arguments
     parser = ArgumentParser()
-    parser.add_argument('--train-files', help='Path to the completed samples', default='samples')
+    parser.add_argument('--adc-study', help='Study ID holding the training data. Overrides any environmental variables')
     parser.add_argument('--optimization-spec', help='Configuration file', default='opt_spec.yaml')
     args = parser.parse_args()
 
     # Load in the optimization configuration
+    if args.adc_study is not None:
+        settings.adc_study_id = args.adc_study
     with open(args.optimization_spec) as fp:
         opt_spec = yaml.load(fp, Loader=SafeLoader)
     opt_spec = OptimizationProblem.parse_obj(opt_spec)
