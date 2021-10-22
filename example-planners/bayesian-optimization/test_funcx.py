@@ -64,7 +64,7 @@ def fit_model(opt_spec: OptimizationProblem, train_x: np.ndarray, train_y: np.nd
     return model
 
 
-def generate_training_set(opt_spec: OptimizationProblem, sample_path) -> Tuple[np.ndarray, np.ndarray]:
+def generate_training_set(opt_spec: OptimizationProblem) -> Tuple[np.ndarray, np.ndarray]:
     """Load in all of the previous samples to build a training set
 
     Uses the inputs and outputs defined in the optimization specification
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     opt_spec = OptimizationProblem.parse_obj(opt_spec)
 
     # Get the training data
-    train_x, train_y = generate_training_set(opt_spec, args.train_files)
+    train_x, train_y = generate_training_set(opt_spec)
     print(f'Loaded a training set of {len(train_x)} entries')
 
     # Log-normalize conductivity
